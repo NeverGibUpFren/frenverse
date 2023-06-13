@@ -50,8 +50,7 @@ const wss = Bun.serve({
           break
         }
         case GameEvent.SAY: {
-          const msg = JSON.parse(payload as string) as Say
-          ws.publish('broadcast', pack(e, JSON.stringify({ ...msg, id: ws.id })))
+          ws.publish('broadcast', pack(e, JSON.stringify({ id: ws.id, text: payload })))
           break
         }
         default: {

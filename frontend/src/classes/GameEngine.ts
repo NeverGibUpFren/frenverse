@@ -1,4 +1,4 @@
-import { Application, Sprite } from 'pixi.js'
+import { Application, BitmapFont, BitmapText, Container, Graphics, Sprite } from 'pixi.js'
 
 import Connection from './Connection'
 
@@ -7,7 +7,19 @@ import apuSrc from '../assets/apu.webp'
 import GameEvent from '../../../shared/GameEvent'
 import MovementEvent from '../../../shared/Movement'
 import PlayerEvent, { Player } from '../../../shared/Player'
+import SayEvent, { Say } from '../../../shared/Say'
 import { Packet, unpack } from '../../../shared/Packet'
+
+enum INDICES {
+  Player,
+  Text
+}
+
+BitmapFont.from('Mono', {
+  fontFamily: 'monospace',
+  fontSize: 16,
+  fill: 'white'
+}, { chars: BitmapFont.ALPHANUMERIC })
 
 export default class GameEngine {
   app: Application
@@ -65,10 +77,10 @@ export default class GameEngine {
     for (const id in this.players) {
       const p = this.players[id]
       switch (p.movement) {
-        case MovementEvent.NORTH: p.sprite.y -= moveAmt; break
-        case MovementEvent.SOUTH: p.sprite.y += moveAmt; break
-        case MovementEvent.EAST: p.sprite.x += moveAmt; break
-        case MovementEvent.WEST: p.sprite.x -= moveAmt; break
+        case MovementEvent.NORTH: p.container.y -= moveAmt; break
+        case MovementEvent.SOUTH: p.container.y += moveAmt; break
+        case MovementEvent.EAST: p.container.x += moveAmt; break
+        case MovementEvent.WEST: p.container.x -= moveAmt; break
         default: break
       }
     }
@@ -79,10 +91,10 @@ export default class GameEngine {
     switch(e[0]) {
       case GameEvent.PLAYER:
         switch (e[1]) {
-          case PlayerEvent.JOINED: this.addPlayer(JSON.parse(payload as string) as Player); break
-          case PlayerEvent.LEFT: this.removePlayer(payload as string); break
+          case PlayerEvent.JOINED: this.addPlayer(JSON.parse(payload) as Player); break
+          case PlayerEvent.LEFT: this.removePlayer(payload); break
           case PlayerEvent.LIST: {
-            const players = JSON.parse(payload as string) as { [key: string]: Player } & { self: string }
+            const players = JSON.parse(payload) as { [key: string]: Player } & { self: string }
             this.selfId = players.self
             delete (players as { self?: unknown })['self']
             for (const id in players) {
@@ -90,33 +102,66 @@ export default class GameEngine {
             }
             break
           }
-
         }
         break
       case GameEvent.MOVE:
-        this.players[payload as string].movement = e[1] as MovementEvent
+        this.players[payload].movement = e[1] as MovementEvent
+        break
+      case GameEvent.SAY:
+        switch(e[1]) {
+          case SayEvent.DEFAULT: this.say(JSON.parse(payload)); break
+        }
         break
     }
   }
 
-  private selfId = ''
-  public players: { [key: string]: Player & { movement: MovementEvent, sprite: Sprite } } = {}
+  public selfId = ''
+  public players: { [key: string]: Player & { movement: MovementEvent, container: Container } } = {}
 
   addPlayer(player: Player) {
-    const s = this.app.stage.addChild(this.sprites.apu())
-    s.x = player.pos.x
-    s.y = player.pos.y
+    const container = new Container()
+
+    container.addChild(this.sprites.apu())
+
+    // const background = new Graphics()
+    // background.beginFill(0xffffff)
+    // background.drawRect(0, 0, 200, 100)
+
+    // container.addChild(background)
+
+    const txt = new BitmapText('Test', { fontName: 'Mono', align: 'center' })
+    txt.position.y = -20
+    txt.visible = false
+
+    container.addChild(txt)
+
+    this.app.stage.addChild(container)
+
+    container.x = player.pos.x
+    container.y = player.pos.y
+
     this.players[player.id] = {
       ...player,
-      movement: MovementEvent.STOPPED,
-      sprite: s
+      container,
+      movement: MovementEvent.STOPPED
     }
   }
 
   removePlayer(id: string) {
     const p = this.players[id]
-    this.app.stage.removeChild(p.sprite)
+    this.app.stage.removeChild(p.container)
     delete this.players[id]
+  }
+
+  say(info: Say, incomming = true) {
+    const p = this.players[info.id]
+    const t = p.container.getChildAt(INDICES.Text) as BitmapText
+    t.text = info.text
+    t.dirty = true
+    t.visible = true
+    setTimeout(() => t.visible = false, 5000) // TODO: make this better
+
+    !incomming && this.conn?.send([GameEvent.SAY, SayEvent.DEFAULT], JSON.stringify(info.text))
   }
 
   private moveKeyMap: { [key: string]: MovementEvent } = {
