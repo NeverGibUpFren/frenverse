@@ -10,7 +10,7 @@ export default function GamePortal() {
 
   useEffect(() => {
     connRef.current = new Connection()
-    engineRef.current = new GameEngine(container.current!, connRef.current)
+    engineRef.current = GameEngine.setup(container.current!, connRef.current)
 
     return () => engineRef.current?.dispose()
   }, [])

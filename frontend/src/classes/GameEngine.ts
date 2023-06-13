@@ -5,32 +5,19 @@ import Connection from './Connection'
 import apuSrc from '../assets/apu.webp'
 
 import GameEvent from '../../../shared/GameEvent'
-import Movement from '../../../shared/Movement'
-import Player from '../../../shared/Player'
+import MovementEvent from '../../../shared/Movement'
+import PlayerEvent, { Player } from '../../../shared/Player'
 import { Packet, unpack } from '../../../shared/Packet'
 
 export default class GameEngine {
   app: Application
 
-  private player: Sprite
-
   private sprites = {
     apu: () => Sprite.from(apuSrc)
   }
 
-  constructor(private container: HTMLDivElement, private conn: Connection) {
+  constructor() {
     this.app = new Application({ background: '#127252' })
-    this.fitToParent()
-    container.parentElement?.append(this.app.view as unknown as HTMLCanvasElement)
-
-    this.player = this.app.stage.addChild(this.sprites.apu())
-
-    this.conn.$message.subscribe(this.onGameEvent.bind(this))
-
-    this.onKeyDown = this.onKeyDown.bind(this)
-    this.onKeyUp = this.onKeyUp.bind(this)
-    window.addEventListener('keydown', this.onKeyDown)
-    window.addEventListener('keyup', this.onKeyUp)
 
     let elapsed = 0.0
     this.app.ticker.add((delta) => {
@@ -39,8 +26,30 @@ export default class GameEngine {
     })
   }
 
+  private container?: HTMLDivElement
+  private conn?: Connection
+
+  public static setup(container: HTMLDivElement, conn: Connection) {
+    const instance = new GameEngine()
+    instance.container = container
+    instance.conn = conn
+
+    instance.fitToParent()
+
+    container.parentElement?.append(instance.app.view as unknown as HTMLCanvasElement)
+
+    conn.$message.subscribe(instance.onGameEvent.bind(instance))
+
+    instance.onKeyDown = instance.onKeyDown.bind(instance)
+    instance.onKeyUp = instance.onKeyUp.bind(instance)
+    window.addEventListener('keydown', instance.onKeyDown)
+    window.addEventListener('keyup', instance.onKeyUp)
+
+    return instance
+  }
+
   private getParentDim() {
-    return [this.container.parentElement!.clientHeight, this.container.parentElement!.clientWidth]
+    return [this.container!.parentElement!.clientHeight, this.container!.parentElement!.clientWidth]
   }
 
   fitToParent() {
@@ -48,28 +57,18 @@ export default class GameEngine {
     this.app.renderer.resize(w, h)
   }
 
-  private currentMovement = Movement.STOPPED
   private speed = 4
 
   onTick(delta: number, elapsed: number) {
     const moveAmt = (this.speed * delta)
-    // self
-    switch (this.currentMovement) {
-      case Movement.NORTH: this.player.y -= moveAmt; break
-      case Movement.SOUTH: this.player.y += moveAmt; break
-      case Movement.EAST: this.player.x += moveAmt; break
-      case Movement.WEST: this.player.x -= moveAmt; break
-      default: break
-    }
 
-    // other players
     for (const id in this.players) {
       const p = this.players[id]
       switch (p.movement) {
-        case Movement.NORTH: p.sprite.y -= moveAmt; break
-        case Movement.SOUTH: p.sprite.y += moveAmt; break
-        case Movement.EAST: p.sprite.x += moveAmt; break
-        case Movement.WEST: p.sprite.x -= moveAmt; break
+        case MovementEvent.NORTH: p.sprite.y -= moveAmt; break
+        case MovementEvent.SOUTH: p.sprite.y += moveAmt; break
+        case MovementEvent.EAST: p.sprite.x += moveAmt; break
+        case MovementEvent.WEST: p.sprite.x -= moveAmt; break
         default: break
       }
     }
@@ -80,38 +79,59 @@ export default class GameEngine {
     switch(e[0]) {
       case GameEvent.PLAYER:
         switch (e[1]) {
-          case Player.JOINED: this.addPlayer(payload as string); break
+          case PlayerEvent.JOINED: this.addPlayer(JSON.parse(payload as string) as Player); break
+          case PlayerEvent.LEFT: this.removePlayer(payload as string); break
+          case PlayerEvent.LIST: {
+            const players = JSON.parse(payload as string) as { [key: string]: Player } & { self: string }
+            this.selfId = players.self
+            delete (players as { self?: unknown })['self']
+            for (const id in players) {
+              this.addPlayer(players[id])
+            }
+            break
+          }
+
         }
         break
       case GameEvent.MOVE:
-        this.players[payload as string].movement = e[1] as Movement
+        this.players[payload as string].movement = e[1] as MovementEvent
         break
     }
   }
 
-  public players: { [key: string]: { id: string, movement: Movement, sprite: Sprite } } = {}
-  addPlayer(id: string) {
+  private selfId = ''
+  public players: { [key: string]: Player & { movement: MovementEvent, sprite: Sprite } } = {}
+
+  addPlayer(player: Player) {
     const s = this.app.stage.addChild(this.sprites.apu())
-    this.players[id] = {
-      id,
-      movement: Movement.STOPPED,
+    s.x = player.pos.x
+    s.y = player.pos.y
+    this.players[player.id] = {
+      ...player,
+      movement: MovementEvent.STOPPED,
       sprite: s
     }
   }
 
-  private moveKeyMap: { [key: string]: Movement } = {
-    w: Movement.NORTH,
-    s: Movement.SOUTH,
-    d: Movement.EAST,
-    a: Movement.WEST
+  removePlayer(id: string) {
+    const p = this.players[id]
+    this.app.stage.removeChild(p.sprite)
+    delete this.players[id]
+  }
+
+  private moveKeyMap: { [key: string]: MovementEvent } = {
+    w: MovementEvent.NORTH,
+    s: MovementEvent.SOUTH,
+    d: MovementEvent.EAST,
+    a: MovementEvent.WEST
   }
 
   private pressedKeys: { [key: string]: boolean }  = { w: false, s: false, d: false, a: false }
 
   onKeyDown(e: KeyboardEvent, force = false) {
-    if (!this.pressedKeys[e.key] || force) {
-      this.conn.send([GameEvent.MOVE, this.moveKeyMap[e.key]])
-      this.currentMovement = this.moveKeyMap[e.key]
+    if (force || (this.moveKeyMap[e.key] !== undefined && !this.pressedKeys[e.key])) {
+      this.conn!.send([GameEvent.MOVE, this.moveKeyMap[e.key]])
+      this.players[this.selfId].movement = this.moveKeyMap[e.key]
       this.pressedKeys[e.key] = true
     }
   }
@@ -125,16 +145,18 @@ export default class GameEngine {
       if (otherKeyPress) {
         this.onKeyDown({ key: otherKeyPress } as unknown as KeyboardEvent, true) // simulate other keypress
       } else {
-        this.conn.send([GameEvent.MOVE, Movement.STOPPED])
-        this.currentMovement = Movement.STOPPED
+        this.conn?.send([GameEvent.MOVE, MovementEvent.STOPPED])
+        this.players[this.selfId].movement = MovementEvent.STOPPED
       }
     }
   }
 
   dispose() {
-    this.conn.dispose()
-    window.removeEventListener('keydown', this.onKeyDown)
-    window.removeEventListener('keyup', this.onKeyUp)
+    this.conn?.dispose()
+    if (this.container) {
+      window.removeEventListener('keydown', this.onKeyDown)
+      window.removeEventListener('keyup', this.onKeyUp)
+    }
     this.app.destroy(true)
   }
 

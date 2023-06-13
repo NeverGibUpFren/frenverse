@@ -1,4 +1,4 @@
-enum Movement {
+enum MovementEvent {
   NORTH,
   SOUTH,
   EAST,
@@ -7,4 +7,4 @@ enum Movement {
   STOPPED
 }
 
-export default Movement
+export default MovementEvent

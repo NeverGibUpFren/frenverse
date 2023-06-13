@@ -2,11 +2,14 @@ import { ServerWebSocket } from 'bun'
 import { randomUUID } from 'crypto'
 
 import GameEvent from '../shared/GameEvent'
-import Player from '../shared/Player'
+import PlayerEvent, { Player } from '../shared/Player'
+import { Say } from '../shared/Say'
 
 import { Packet, pack, unpack } from '../shared/Packet'
 
 type WSUnique = ServerWebSocket & { id?: string }
+
+const players: { [key: string]: Player } = {}
 
 const wss = Bun.serve({
   async fetch(req, server) {
@@ -23,15 +26,32 @@ const wss = Bun.serve({
   websocket: {
     open(ws: WSUnique) {
       ws.id = randomUUID()
-      wss.publish('broadcast', pack([GameEvent.PLAYER, Player.JOINED], ws.id))
+      players[ws.id] = { id: ws.id, pos: { x: 0, y: 0 } }
+
+      wss.publish('broadcast', pack([GameEvent.PLAYER, PlayerEvent.JOINED], JSON.stringify(players[ws.id])))
+
+      ws.send(pack([GameEvent.PLAYER, PlayerEvent.LIST], JSON.stringify({...players, self: ws.id })))
       ws.subscribe('broadcast')
+      console.log(`${ws.id} joined`)
     },
     message(ws: WSUnique, message) {
       console.log(ws.id, message)
-      const [e, payload] = unpack(message as Packet)
+      // TODO: unpack has to throw
+      const [e, payload, never] = unpack(message as Packet)
+      if (never !== undefined) {
+        // message is not in the correct format, close socket
+        ws.close()
+        return
+      }
+
       switch (e[0]) {
         case GameEvent.MOVE: {
-          ws.publish('broadcast', message + '|' + ws.id)
+          ws.publish('broadcast', pack(e, ws.id))
+          break
+        }
+        case GameEvent.SAY: {
+          const msg = JSON.parse(payload as string) as Say
+          ws.publish('broadcast', pack(e, JSON.stringify({ ...msg, id: ws.id })))
           break
         }
         default: {
@@ -39,7 +59,11 @@ const wss = Bun.serve({
           break
         }
       }
-
+    },
+    close(ws: WSUnique) {
+      delete players[ws.id!]
+      wss.publish('broadcast', pack([GameEvent.PLAYER, PlayerEvent.LEFT], ws.id!))
+      console.log(`${ws.id} left`)
     }
   }
 })

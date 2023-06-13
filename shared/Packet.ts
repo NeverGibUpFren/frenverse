@@ -5,6 +5,6 @@ export function pack(e: number[], payload?: string): Packet {
 }
 
 export function unpack<T>(pkt: Packet, formatter?: (i: string) => T) {
-  const [events, payload] = pkt.split('|')
-  return [events.split(':').map(e => Number(e)), formatter ? formatter(payload) : (payload as T)] as const
+  const [events, payload, never] = pkt.split('|')
+  return [events.split(':').map(e => Number(e)), formatter ? formatter(payload) : (payload as T), never] as const
 }
