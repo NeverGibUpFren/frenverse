@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4834736ecb6a7514ab6d1d39569b8b1d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Editor/MirrorConstraintEditor.cs
+  uploadId: 587847

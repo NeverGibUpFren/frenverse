@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a193e4b2b16a60443986fe7595e1f7f1
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Editor/TesseraEditor.asmdef
+  uploadId: 587847

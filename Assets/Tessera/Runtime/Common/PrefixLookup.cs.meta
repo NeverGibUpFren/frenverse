@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 80351657eec2f084890e15abd2b8e96d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Common/PrefixLookup.cs
+  uploadId: 587847

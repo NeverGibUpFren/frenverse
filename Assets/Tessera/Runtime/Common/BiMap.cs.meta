@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 35e8857a968d7ad4f922654f2608a222
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Common/BiMap.cs
+  uploadId: 587847

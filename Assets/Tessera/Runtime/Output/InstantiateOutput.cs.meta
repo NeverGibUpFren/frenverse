@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 400dd67dee7308d4fafda4ee97c58fd2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Output/InstantiateOutput.cs
+  uploadId: 587847

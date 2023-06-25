@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e4965faa0a5d82a4a9f3166f85702968
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Editor/TesseraTilemapOutputEditor.cs
+  uploadId: 587847

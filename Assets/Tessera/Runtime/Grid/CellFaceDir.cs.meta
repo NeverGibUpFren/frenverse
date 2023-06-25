@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 81b5ef56e6a1b994d9ad2dd32c2d6f78
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Grid/CellFaceDir.cs
+  uploadId: 587847

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 99849cb50264b6b49929b39858da3c94
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Grid/TrianglePrism/TrianglePrismFaceDir.cs
+  uploadId: 587847

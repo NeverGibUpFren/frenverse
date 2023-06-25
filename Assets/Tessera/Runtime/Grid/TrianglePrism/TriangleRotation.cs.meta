@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: fb9a62f90e1c14945a3f1fb2c96f8a75
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Grid/TrianglePrism/TriangleRotation.cs
+  uploadId: 587847

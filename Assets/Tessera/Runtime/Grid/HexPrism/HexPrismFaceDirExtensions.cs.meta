@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 8086f9f86f12753499f5c891511bab24
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Grid/HexPrism/HexPrismFaceDirExtensions.cs
+  uploadId: 587847

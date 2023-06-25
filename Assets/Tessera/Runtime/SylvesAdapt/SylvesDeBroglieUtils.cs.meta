@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: cc14ee8377843e94aa9a2f3ddb2d1445
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/SylvesAdapt/SylvesDeBroglieUtils.cs
+  uploadId: 587847

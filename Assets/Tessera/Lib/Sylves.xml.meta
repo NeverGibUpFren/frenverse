@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 501973a80b2f78e4ca662065443e6292
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Lib/Sylves.xml
+  uploadId: 587847

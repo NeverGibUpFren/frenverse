@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 2d075d2fb6cc56846bc44ae8adb68d91
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Grid/Square/SquareFaceDirExtensions.cs
+  uploadId: 587847

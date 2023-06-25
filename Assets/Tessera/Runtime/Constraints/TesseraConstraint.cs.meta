@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c6f461fed4757ea48b86c37f7e43c34f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Constraints/TesseraConstraint.cs
+  uploadId: 587847

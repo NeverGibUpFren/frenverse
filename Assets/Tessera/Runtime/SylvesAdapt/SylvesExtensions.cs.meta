@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4b9936fa7e35d6f4f8256cebca3e571b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/SylvesAdapt/SylvesExtensions.cs
+  uploadId: 587847

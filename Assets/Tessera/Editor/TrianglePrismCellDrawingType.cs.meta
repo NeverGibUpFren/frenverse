@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 49c4c92b47699f44794cff19f7813053
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Editor/TrianglePrismCellDrawingType.cs
+  uploadId: 587847

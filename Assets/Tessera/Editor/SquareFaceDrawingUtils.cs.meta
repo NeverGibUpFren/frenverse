@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e334679aa2db00a49b73662baa90bbbf
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Editor/SquareFaceDrawingUtils.cs
+  uploadId: 587847

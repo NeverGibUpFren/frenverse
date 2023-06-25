@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 63ee6a1dac0909741b7dbc92bb769281
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Tessera.asmdef
+  uploadId: 587847

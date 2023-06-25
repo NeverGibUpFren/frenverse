@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b6f7252aa33bd554b9de1f6d885c2d7d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/TesseraMultipassGenerator.cs
+  uploadId: 587847

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: fa6095ecc3081c54c8f7cf87a289c11d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 161077
+  packageName: Tessera Pro
+  packageVersion: 6.0.1
+  assetPath: Assets/Tessera/Runtime/Common/MatrixInt3x3.cs
+  uploadId: 587847

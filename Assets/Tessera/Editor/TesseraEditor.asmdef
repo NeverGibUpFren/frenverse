@@ -1,0 +1,21 @@
+{
+    "name": "Tessera-Editor",
+    "references": [
+        "GUID:63ee6a1dac0909741b7dbc92bb769281",
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "TesseraDummy.dll",
+        "Sylves.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
