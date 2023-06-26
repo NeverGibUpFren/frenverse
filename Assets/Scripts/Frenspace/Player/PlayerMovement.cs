@@ -63,7 +63,7 @@ namespace Frenspace.Player
             
             // Calculate the motion
             Vector3 playerVelocity;
-            playerVelocity = new Vector3(playerInput.x, 0, playerInput.y);
+            playerVelocity = new Vector3(playerInput.x, this.transform.position.y, playerInput.y);
 
             // Are we moving?
             isMoving = playerInput != Vector2.zero;
