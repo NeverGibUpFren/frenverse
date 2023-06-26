@@ -5,9 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tessera", "Tessera.csproj",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tessera-Editor", "Tessera-Editor.csproj", "{3c648e8f-00db-3370-d4f0-52b64203cd83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{a1eb360f-e402-6e8a-3d6a-5c9dcd468e51}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main", "Main.csproj", "{6893f8b7-90d7-e062-10e7-0c74ec6b9129}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player", "Player.csproj", "{cb874df4-8e22-0235-0efd-a870fe625470}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +18,10 @@ Global
 		{e77360af-0c51-8278-d03a-bedced3c5365}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3c648e8f-00db-3370-d4f0-52b64203cd83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3c648e8f-00db-3370-d4f0-52b64203cd83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{a1eb360f-e402-6e8a-3d6a-5c9dcd468e51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{a1eb360f-e402-6e8a-3d6a-5c9dcd468e51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6893f8b7-90d7-e062-10e7-0c74ec6b9129}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6893f8b7-90d7-e062-10e7-0c74ec6b9129}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{cb874df4-8e22-0235-0efd-a870fe625470}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{cb874df4-8e22-0235-0efd-a870fe625470}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
