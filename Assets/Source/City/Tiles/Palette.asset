@@ -23,8 +23,8 @@ MonoBehaviour:
     name: Grey
   - color: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
     name: Light Grey
-  - color: {r: 0.53333336, g: 0, b: 0.08235294, a: 1}
-    name: Brown
+  - color: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
+    name: Concrete
   - color: {r: 0.7254902, g: 0.47843137, b: 0.34117648, a: 1}
     name: Light Brown
   - color: {r: 0.92941177, g: 0.10980392, b: 0.14117648, a: 1}
@@ -51,7 +51,7 @@ MonoBehaviour:
     name: Purple
   - color: {r: 0.78431374, g: 0.6313726, b: 0.90588236, a: 1}
     name: Light Purple
-  - color: {r: 1, g: 0, b: 0.78079414, a: 1}
+  - color: {r: 1, g: 0, b: 0.84800243, a: 1}
     name: Deep Pink
   matchOverridesList:
   - color1: 4
@@ -60,11 +60,23 @@ MonoBehaviour:
   - color1: 19
     color2: 4
     isMatch: 1
-  - color1: 4
-    color2: 8
+  - color1: 5
+    color2: 3
     isMatch: 1
-  - color1: 8
+  - color1: 3
+    color2: 5
+    isMatch: 1
+  - color1: 5
     color2: 4
+    isMatch: 1
+  - color1: 4
+    color2: 5
+    isMatch: 1
+  - color1: 16
+    color2: 4
+    isMatch: 1
+  - color1: 4
+    color2: 16
     isMatch: 1
   - color1: 8
     color2: 19
@@ -72,9 +84,9 @@ MonoBehaviour:
   - color1: 19
     color2: 8
     isMatch: 1
-  - color1: 2
-    color2: 8
-    isMatch: 1
   - color1: 8
     color2: 2
+    isMatch: 1
+  - color1: 2
+    color2: 8
     isMatch: 1

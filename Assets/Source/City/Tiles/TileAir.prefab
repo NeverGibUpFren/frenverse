@@ -51,15 +51,15 @@ MonoBehaviour:
     faceDir: 0
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 16
+      top: 16
+      topRight: 16
+      left: 16
+      center: 16
+      right: 16
+      bottomLeft: 16
+      bottom: 16
+      bottomRight: 16
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -68,15 +68,15 @@ MonoBehaviour:
     faceDir: 1
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 16
+      top: 16
+      topRight: 16
+      left: 16
+      center: 16
+      right: 16
+      bottomLeft: 16
+      bottom: 16
+      bottomRight: 16
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -119,15 +119,15 @@ MonoBehaviour:
     faceDir: 4
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 16
+      top: 16
+      topRight: 16
+      left: 16
+      center: 16
+      right: 16
+      bottomLeft: 16
+      bottom: 16
+      bottomRight: 16
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -136,15 +136,15 @@ MonoBehaviour:
     faceDir: 5
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 16
+      top: 16
+      topRight: 16
+      left: 16
+      center: 16
+      right: 16
+      bottomLeft: 16
+      bottom: 16
+      bottomRight: 16
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -157,4 +157,4 @@ MonoBehaviour:
   reflectable: 1
   rotationGroupType: 3
   symmetric: 1
-  instantiateChildrenOnly: 1
+  instantiateChildrenOnly: 0
