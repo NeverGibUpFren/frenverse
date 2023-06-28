@@ -5,7 +5,7 @@ namespace Frenspace.Player
   /// <summary>
   /// Handles the interaction between Car and Player
   /// </summary>
-  public class Car : MonoBehaviour
+  public class Plane : MonoBehaviour
   {
     private GameObject player;
 
@@ -17,38 +17,46 @@ namespace Frenspace.Player
       {
         if (entered)
         {
-          LeaveCar();
+          if (IsGrounded())
+          {
+            LeavePlane();
+          }
         }
         else
         {
-          EnterCar();
+          EnterPlane();
         }
       }
     }
 
-    void EnterCar()
+    bool IsGrounded()
+    {
+      return Physics.Raycast(transform.parent.position, -Vector3.up, 0.003f);
+    }
+
+    void EnterPlane()
     {
       player.GetComponent<PlayerMovement>().enabled = false;
       player.GetComponent<PlayerMovementAnimation>().enabled = false;
       player.GetComponent<CharacterController>().enabled = false;
 
-      player.transform.position = transform.TransformPoint(new Vector3(-0.51f, 0.176f, 0.697f));
+      player.transform.position = transform.TransformPoint(new Vector3(-0.5f, 0.444f, 0.196f));
       player.transform.parent = transform;
       player.transform.localRotation = new Quaternion();
 
       GetComponentInParent<CharacterController>().enabled = true;
-      GetComponentInParent<CarMovement>().enabled = true;
+      GetComponentInParent<PlaneMovement>().enabled = true;
 
       entered = true;
     }
 
-    void LeaveCar()
+    void LeavePlane()
     {
-      GetComponentInParent<CarMovement>().enabled = false;
+      GetComponentInParent<PlaneMovement>().enabled = false;
       GetComponentInParent<CharacterController>().enabled = false;
 
       player.transform.parent = null;
-      player.transform.position = transform.TransformPoint(new Vector3(-2.39f, 0.06f, 0.697f));
+      player.transform.position = transform.TransformPoint(new Vector3(-2.345f, 0.06f, 0.195f));
 
       player.GetComponent<CharacterController>().enabled = true;
       player.GetComponent<PlayerMovementAnimation>().enabled = true;
