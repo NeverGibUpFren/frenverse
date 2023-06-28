@@ -347,8 +347,11 @@ namespace Tessera
     /// </summary>
     public void Clear()
     {
-      var output = GetComponent<ITesseraTileOutput>() ?? new InstantiateOutput(transform);
-      output.ClearTiles(UnityEngineInterface.Instance);
+      var outputs = GetTileOutputs();
+      foreach (var output in outputs)
+      {
+        output.ClearTiles(UnityEngineInterface.Instance);
+      }
     }
 
     /// <summary>
@@ -385,8 +388,12 @@ namespace Tessera
         gridTransform = new TRS(Vector3.zero),
         tileData = tilemap.Data,
       };
-      var output = GetTileOutput();
-      output.UpdateTiles(completion, engineInterface);
+
+      var outputs = GetTileOutputs();
+      foreach (var output in outputs)
+      {
+        output.UpdateTiles(completion, engineInterface);
+      }
     }
 
     /// <summary>
@@ -453,18 +460,18 @@ namespace Tessera
       }
     }
 
-    public ITesseraTileOutput GetTileOutput(bool forceIncremental = false)
+    public ITesseraTileOutput[] GetTileOutputs(bool forceIncremental = false)
     {
-      var component = GetComponent<ITesseraTileOutput>();
-      if (component != null)
+      var components = GetComponents<ITesseraTileOutput>();
+      if (components.Length > 0)
       {
-        return component;
+        return components;
       }
       if (forceIncremental)
       {
-        return new UpdatableInstantiateOutput(transform);
+        return new ITesseraTileOutput[] { new UpdatableInstantiateOutput(transform) };
       }
-      return new InstantiateOutput(transform);
+      return new ITesseraTileOutput[] { new InstantiateOutput(transform) };
     }
 
     internal TesseraGeneratorHelper CreateTesseraGeneratorHelper(TesseraGenerateOptions options = null)
@@ -846,17 +853,20 @@ namespace Tessera
         return;
       }
 
-      ITesseraTileOutput to = null;
+      ITesseraTileOutput[] to = null;
       if (options.onCreate != null)
       {
-        to = new ForEachOutput(options.onCreate);
+        to = new ITesseraTileOutput[] { new ForEachOutput(options.onCreate) };
       }
       else
       {
-        to = GetTileOutput();
+        to = GetTileOutputs();
       }
 
-      to.UpdateTiles(completion, UnityEngineInterface.Instance);
+      foreach (var o in to)
+      {
+        o.UpdateTiles(completion, UnityEngineInterface.Instance);
+      }
     }
 
     // See showUncertainty
