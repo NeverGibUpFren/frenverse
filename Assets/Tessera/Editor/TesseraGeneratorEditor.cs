@@ -813,6 +813,7 @@ namespace Tessera
         EditorGUILayout.PropertyField(serializedObject.FindProperty("seed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("retries"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("backtrack"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("searchInitialConstraints"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("stepLimit"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("algorithm"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("recordUndo"));

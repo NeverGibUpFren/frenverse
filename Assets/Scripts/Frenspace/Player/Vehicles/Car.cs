@@ -9,18 +9,21 @@ namespace Frenspace.Player
   {
     private GameObject player;
 
+    private bool canEnter = false;
     private bool entered = false;
 
     void Update()
     {
-      if (player && Input.GetKeyDown("e"))
+      if (canEnter && Input.GetKeyDown("e"))
       {
         if (entered)
         {
           LeaveCar();
+          player = null;
         }
         else
         {
+          player = GameObject.FindWithTag("Player");
           EnterCar();
         }
       }
@@ -59,15 +62,12 @@ namespace Frenspace.Player
 
     void OnTriggerEnter(Collider other)
     {
-      if (other.GetComponent<PlayerMovement>())
-      {
-        player = other.gameObject;
-      }
+      canEnter = true;
     }
 
     void OnTriggerExit(Collider other)
     {
-      player = null;
+      canEnter = false;
     }
   }
 
