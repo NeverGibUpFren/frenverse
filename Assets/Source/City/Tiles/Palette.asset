@@ -90,3 +90,9 @@ MonoBehaviour:
   - color1: 2
     color2: 8
     isMatch: 1
+  - color1: 18
+    color2: 8
+    isMatch: 1
+  - color1: 8
+    color2: 18
+    isMatch: 1
