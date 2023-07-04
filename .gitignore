@@ -72,3 +72,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 /Assets/Tessera/Sample/**
+server/glueserver/node_modules/**

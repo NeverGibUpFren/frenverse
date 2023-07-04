@@ -1,0 +1,54 @@
+<html>
+
+<body>
+  henlo
+
+  <script>
+    const con = new RTCPeerConnection({ iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] })
+
+    let udp, tcp
+    con.addEventListener('datachannel', (e) => {
+      switch (e.channel.label) {
+        case 'UDP':
+          udp = e.channel
+          break
+        case 'TCP':
+          tcp = e.channel
+          break
+      }
+    })
+
+    const connect = async () => {
+      const ro = await fetch('/sdp', { method: 'POST', body: JSON.stringify({ requestSdp: true }), headers: { "Content-Type": "application/json" }, })
+      const offer = await ro.json()
+
+      await con.setRemoteDescription(offer.desc)
+
+      for (const candidate of offer.candidates) {
+        await con.addIceCandidate(new RTCIceCandidate({ candidate: candidate.c, sdpMid: candidate.m }))
+      }
+
+      const answer = await con.createAnswer()
+      await con.setLocalDescription(answer)
+
+      const candidates = await (new Promise(res => {
+        const candidates = []
+        con.onicecandidate = (e) => {
+          if (e.candidate == null) {
+            res(candidates)
+            con.onicecandidate = null
+          } else {
+            candidates.push({ c: e.candidate.candidate, m: e.candidate.sdpMid })
+          }
+        }
+      }))
+
+      const ra = await fetch('/sdp', { method: 'POST', body: JSON.stringify({ desc: answer, candidates }), headers: { "Content-Type": "application/json" }, })
+    }
+
+    connect()
+
+  </script>
+</body>
+
+</html>
