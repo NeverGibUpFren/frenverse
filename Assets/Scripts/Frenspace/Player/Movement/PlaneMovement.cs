@@ -35,18 +35,18 @@ namespace Frenspace.Player
         switch (keysPressed[keysPressed.Count - 1])
         {
           case KeyCode.LeftShift:
-            movement.y += speedY;
+            if (transform.position.y < maxElevation)
+            {
+              // sky limit
+              movement.y += speedY;
+            }
             break;
           case KeyCode.LeftAlt:
             movement.y -= speedY;
             break;
         }
 
-        if (transform.position.y >= maxElevation)
-        {
-          // sky limit
-          movement.y = 0f;
-        }
+
       }
 
       if (transform.position.y < minElevation)
