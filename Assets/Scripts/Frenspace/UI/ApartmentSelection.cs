@@ -36,7 +36,7 @@ namespace Frenspace.UI
     {
       if (held)
       {
-        xP.transform.Rotate(new Vector3(eventData.delta.y, 0, 0) * 0.6f);
+        xP.transform.Rotate(new Vector3(-eventData.delta.y, 0, 0) * 0.6f);
         yP.transform.Rotate(new Vector3(0, -eventData.delta.x, 0) * 0.6f);
       }
     }
