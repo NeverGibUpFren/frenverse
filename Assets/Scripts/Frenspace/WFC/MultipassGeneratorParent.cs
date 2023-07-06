@@ -1,6 +1,5 @@
 using UnityEngine;
 using Tessera;
-
 public class MultipassGeneratorParent : MonoBehaviour
 {
   public int dimension = 50;

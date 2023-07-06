@@ -3,7 +3,7 @@
 /// Camera Controller in CSharp v2.1 
 /// </summary> 
 using UnityEngine;
-using System.Collections;
+using UnityEngine.EventSystems;
 
 public class CameraControllercs : MonoBehaviour
 {
@@ -46,22 +46,12 @@ public class CameraControllercs : MonoBehaviour
     if (lockToRearOfTarget)
       rotateBehind = true;
   }
-  void Update()
-  {
-    if (target == null)
-    {
-      target = GameObject.FindGameObjectWithTag("Player") as GameObject;
-      Debug.Log("Looking for Player");
-    }
-
-  }
 
   //Only Move camera after everything else has been updated
   void LateUpdate()
   {
-    // Don't do anything if target is not defined
-    if (target == null)
-      return;
+    if (EventSystem.current.IsPointerOverGameObject()) { return; }
+
     //pushbuffer
     if (pbuffer > 0)
       pbuffer -= Time.deltaTime;

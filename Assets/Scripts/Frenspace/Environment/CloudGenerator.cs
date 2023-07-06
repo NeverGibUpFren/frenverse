@@ -4,7 +4,6 @@ using System.Collections;
 struct Cloud
 {
   public Transform t;
-  public SpriteRenderer r;
   public float opacity;
   public Vector3 orgPos;
   public float speed;
@@ -40,7 +39,7 @@ public class CloudGenerator : MonoBehaviour
   void LateUpdate()
   {
     Vector3 newRotation = mainCamera.transform.eulerAngles;
-    newRotation.x = 0;
+    newRotation.x = 90;
     newRotation.z = 0;
     for (int i = 0; i < refs.Length; i++)
     {
@@ -54,25 +53,23 @@ public class CloudGenerator : MonoBehaviour
 
       if (c.t.position.z > depth)
       {
-        if (c.r.color.a > 0)
-        {
-          // fade out
-          c.r.color -= new Color(0, 0, 0, 0.001f);
-        }
-        else
-        {
-          // destroy
-          Destroy(c.t.gameObject);
-          refs[i] = GenerateCloud(true);
-        }
+        // if (c.r.color.a > 0)
+        // {
+        //   // fade out
+        //   c.r.color -= new Color(0, 0, 0, 0.001f);
+        // }
+
+        // destroy
+        Destroy(c.t.gameObject);
+        refs[i] = GenerateCloud(true);
       }
       else
       {
-        if (c.r.color.a < c.opacity)
-        {
-          // fade in
-          c.r.color += new Color(0, 0, 0, 0.001f);
-        }
+        // if (c.r.color.a < c.opacity)
+        // {
+        //   // fade in
+        //   c.r.color += new Color(0, 0, 0, 0.001f);
+        // }
       }
     }
   }
@@ -105,26 +102,26 @@ public class CloudGenerator : MonoBehaviour
         cloudPrefab.transform.rotation
     ) as GameObject;
     float scale = Random.Range(minScale, maxScale);
-    cloud.transform.localScale = new Vector3(scale, scale, 1);
+    cloud.transform.localScale = new Vector3(scale, 0.1f, scale);
 
     cloud.transform.SetParent(this.transform);
     cloud.hideFlags = HideFlags.HideInHierarchy;
 
     Cloud c = new Cloud();
     c.t = cloud.transform;
-    c.r = cloud.GetComponent<SpriteRenderer>();
+    // c.r = cloud.GetComponent<SpriteRenderer>();
     c.orgPos = cloud.transform.position + new Vector3();
     c.speed = Random.Range(minSpeed, maxSpeed);
-    c.r.flipX = Random.Range(0, 10) > 5f ? true : false;
+    // c.r.flipX = Random.Range(0, 10) > 5f ? true : false;
     c.offset = Random.Range(1, 1000);
     c.opacity = Random.Range(0.6f, 1);
     if (atStart)
     {
-      c.r.color = new Color(1, 1, 1, 0);
+      // c.r.color = new Color(1, 1, 1, 0);
     }
     else
     {
-      c.r.color = new Color(1, 1, 1, c.opacity);
+      // c.r.color = new Color(1, 1, 1, c.opacity);
     }
 
     return c;
