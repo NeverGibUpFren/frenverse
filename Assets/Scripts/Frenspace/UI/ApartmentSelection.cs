@@ -19,6 +19,7 @@ namespace Frenspace.UI
       if (eventData.button == PointerEventData.InputButton.Left)
       {
         held = true;
+        Camera.main.GetComponent<CameraControllercs>().block = true;
         xP = scene.transform;
         yP = xP.GetChild(0).transform;
       }
@@ -29,6 +30,7 @@ namespace Frenspace.UI
       if (eventData.button == PointerEventData.InputButton.Left)
       {
         held = false;
+        Camera.main.GetComponent<CameraControllercs>().block = false;
       }
     }
 

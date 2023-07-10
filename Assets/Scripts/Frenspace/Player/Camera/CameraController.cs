@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 
 public class CameraControllercs : MonoBehaviour
 {
+  public bool block = false;                // block updates
   public GameObject target;                  // Target to follow
   public float targetHeight = 1.7f;          // Vertical offset adjustment
   public float distance = 12.0f;             // Default Distance
@@ -50,7 +51,7 @@ public class CameraControllercs : MonoBehaviour
   //Only Move camera after everything else has been updated
   void LateUpdate()
   {
-    if (EventSystem.current.IsPointerOverGameObject()) { return; }
+    if (block) { return; }
 
     //pushbuffer
     if (pbuffer > 0)
