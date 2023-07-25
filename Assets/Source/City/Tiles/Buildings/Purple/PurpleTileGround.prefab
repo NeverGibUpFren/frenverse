@@ -53,15 +53,15 @@ MonoBehaviour:
     faceDir: 0
     faceDetails:
       faceType: 4
-      topLeft: 4
-      top: 4
-      topRight: 4
-      left: 4
-      center: 4
-      right: 4
-      bottomLeft: 4
-      bottom: 4
-      bottomRight: 4
+      topLeft: 17
+      top: 17
+      topRight: 17
+      left: 17
+      center: 17
+      right: 17
+      bottomLeft: 17
+      bottom: 17
+      bottomRight: 17
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -70,15 +70,15 @@ MonoBehaviour:
     faceDir: 1
     faceDetails:
       faceType: 4
-      topLeft: 4
-      top: 4
-      topRight: 4
-      left: 4
-      center: 4
-      right: 4
-      bottomLeft: 4
-      bottom: 4
-      bottomRight: 4
+      topLeft: 17
+      top: 17
+      topRight: 17
+      left: 17
+      center: 17
+      right: 17
+      bottomLeft: 17
+      bottom: 17
+      bottomRight: 17
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -104,15 +104,15 @@ MonoBehaviour:
     faceDir: 3
     faceDetails:
       faceType: 4
-      topLeft: 19
-      top: 19
-      topRight: 19
-      left: 19
-      center: 19
-      right: 19
-      bottomLeft: 19
-      bottom: 19
-      bottomRight: 19
+      topLeft: 7
+      top: 7
+      topRight: 7
+      left: 7
+      center: 7
+      right: 7
+      bottomLeft: 7
+      bottom: 7
+      bottomRight: 7
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -121,15 +121,15 @@ MonoBehaviour:
     faceDir: 4
     faceDetails:
       faceType: 4
-      topLeft: 4
-      top: 4
-      topRight: 4
-      left: 4
-      center: 4
-      right: 4
-      bottomLeft: 4
-      bottom: 4
-      bottomRight: 4
+      topLeft: 17
+      top: 17
+      topRight: 17
+      left: 17
+      center: 17
+      right: 17
+      bottomLeft: 17
+      bottom: 17
+      bottomRight: 17
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -167,7 +167,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4627743676199981832}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: -2432090755550338912, guid: ecb57d12fdc4ff5488ddb966b572c6d7, type: 3}
 --- !u!23 &5974583659383694747
 MeshRenderer:
   m_ObjectHideFlags: 0

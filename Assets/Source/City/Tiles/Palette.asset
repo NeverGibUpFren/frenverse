@@ -79,20 +79,59 @@ MonoBehaviour:
     color2: 16
     isMatch: 1
   - color1: 8
-    color2: 19
-    isMatch: 1
-  - color1: 19
-    color2: 8
-    isMatch: 1
-  - color1: 8
     color2: 2
     isMatch: 1
   - color1: 2
     color2: 8
     isMatch: 1
-  - color1: 18
-    color2: 8
+  - color1: 14
+    color2: 5
     isMatch: 1
-  - color1: 8
+  - color1: 5
+    color2: 14
+    isMatch: 1
+  - color1: 4
+    color2: 14
+    isMatch: 1
+  - color1: 14
+    color2: 4
+    isMatch: 1
+  - color1: 4
+    color2: 4
+    isMatch: 0
+  - color1: 18
+    color2: 19
+    isMatch: 1
+  - color1: 19
     color2: 18
+    isMatch: 1
+  - color1: 12
+    color2: 16
+    isMatch: 1
+  - color1: 16
+    color2: 12
+    isMatch: 1
+  - color1: 12
+    color2: 4
+    isMatch: 1
+  - color1: 4
+    color2: 12
+    isMatch: 1
+  - color1: 7
+    color2: 1
+    isMatch: 1
+  - color1: 1
+    color2: 7
+    isMatch: 1
+  - color1: 9
+    color2: 13
+    isMatch: 1
+  - color1: 13
+    color2: 9
+    isMatch: 1
+  - color1: 9
+    color2: 17
+    isMatch: 1
+  - color1: 17
+    color2: 9
     isMatch: 1

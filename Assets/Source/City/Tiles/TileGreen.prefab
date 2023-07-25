@@ -53,15 +53,15 @@ MonoBehaviour:
     faceDir: 0
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 14
+      top: 14
+      topRight: 14
+      left: 14
+      center: 14
+      right: 14
+      bottomLeft: 14
+      bottom: 14
+      bottomRight: 14
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -70,15 +70,15 @@ MonoBehaviour:
     faceDir: 1
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 14
+      top: 14
+      topRight: 14
+      left: 14
+      center: 14
+      right: 14
+      bottomLeft: 14
+      bottom: 14
+      bottomRight: 14
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -121,15 +121,15 @@ MonoBehaviour:
     faceDir: 4
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 14
+      top: 14
+      topRight: 14
+      left: 14
+      center: 14
+      right: 14
+      bottomLeft: 14
+      bottom: 14
+      bottomRight: 14
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
@@ -138,15 +138,15 @@ MonoBehaviour:
     faceDir: 5
     faceDetails:
       faceType: 4
-      topLeft: 0
-      top: 0
-      topRight: 0
-      left: 0
-      center: 0
-      right: 0
-      bottomLeft: 0
-      bottom: 0
-      bottomRight: 0
+      topLeft: 14
+      top: 14
+      topRight: 14
+      left: 14
+      center: 14
+      right: 14
+      bottomLeft: 14
+      bottom: 14
+      bottomRight: 14
       hexRightAndTopRight: 0
       hexTopLeftAndLeft: 0
       hexLeftAndBottomLeft: 0
