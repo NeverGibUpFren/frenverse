@@ -29,6 +29,10 @@ public class ChatPlates : MonoBehaviour
     for (int i = 0; i < frens.Length; i++)
     {
       var point = Camera.main.WorldToScreenPoint(frens[i].transform.GetChild(0).position);
+      if (point.z < 0f)
+      {
+        point = new Vector3(-100f, -100f, -100f);
+      }
       plates[i].transform.position = point;
     }
 

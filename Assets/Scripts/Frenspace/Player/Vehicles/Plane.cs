@@ -51,6 +51,10 @@ namespace Frenspace.Player
       GetComponentInParent<PlaneMovement>().enabled = true;
 
       entered = true;
+      this.Invoke(() =>
+      {
+        GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
+      }, 0.1f);
     }
 
     void LeavePlane()
@@ -71,11 +75,13 @@ namespace Frenspace.Player
     void OnTriggerEnter(Collider other)
     {
       canEnter = true;
+      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(true);
     }
 
     void OnTriggerExit(Collider other)
     {
       canEnter = false;
+      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
     }
   }
 

@@ -15,14 +15,14 @@ namespace Frenspace.Player
     protected CharacterController ctrlr;
     protected MovementAnimation anmtr;
 
-    private ChatInput ci;
 
     virtual protected void Start()
     {
       ctrlr = gameObject.GetComponent<CharacterController>();
       anmtr = gameObject.GetComponent<MovementAnimation>();
       cam = Camera.main;
-      ci = GameObject.FindWithTag("Chat").GetComponent<ChatInput>();
+
+      // TODO: handle chat input
     }
 
     protected void Update()
@@ -36,12 +36,25 @@ namespace Frenspace.Player
       anmtr?.Animate(movement);
     }
 
+    public void Port(Vector3 to)
+    {
+      this.enabled = false;
+
+      this.Defer(() =>
+      {
+        transform.position = to;
+
+        this.Defer(() =>
+        {
+          this.enabled = true;
+        });
+      });
+    }
+
     protected KeyCode[] keys = new KeyCode[] { KeyCode.W, KeyCode.S, KeyCode.A, KeyCode.D };
     protected List<KeyCode> keysPressed = new List<KeyCode>();
     protected void HandleKeys()
     {
-      if (ci.active) { return; }
-
       for (int i = 0; i < keys.Length; i++)
       {
         KeyCode key = keys[i];

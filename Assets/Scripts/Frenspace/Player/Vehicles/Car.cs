@@ -43,6 +43,10 @@ namespace Frenspace.Player
       GetComponentInParent<CarMovement>().enabled = true;
 
       entered = true;
+      this.Invoke(() =>
+      {
+        GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
+      }, 0.1f);
     }
 
     void LeaveCar()
@@ -63,11 +67,13 @@ namespace Frenspace.Player
     void OnTriggerEnter(Collider other)
     {
       canEnter = true;
+      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(true);
     }
 
     void OnTriggerExit(Collider other)
     {
       canEnter = false;
+      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
     }
   }
 

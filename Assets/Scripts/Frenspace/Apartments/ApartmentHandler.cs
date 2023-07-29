@@ -1,6 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using Frenspace.UI;
+using Frenspace.Player;
 using UnityEngine;
 
 namespace Frenspace.Apartments
@@ -12,17 +11,13 @@ namespace Frenspace.Apartments
     public GameObject WallPrefab;
     public BuildingTileHolder bth;
 
+
     private List<GameObject> gatheredTiles;
 
     private Transform selectionTransform;
 
-
-    public GameObject selectionlUI;
-
-    void Start()
-    {
-      selectionlUI.SetActive(false);
-    }
+    private Vector3 beforePortPosition;
+    private GameObject lastApartment;
 
     void Update()
     {
@@ -41,7 +36,8 @@ namespace Frenspace.Apartments
           {
             selectionTransform = tile.transform;
             GatherTiles(tile.transform);
-            SetupApartmentPreview(tile.transform);
+            EnterApartmentPreview();
+            // SetupApartmentPreview(tile.transform);
             return;
           }
         }
@@ -103,19 +99,24 @@ namespace Frenspace.Apartments
         copy.transform.localPosition -= t.localPosition;
       }
 
+      var innerShell = Instantiate(EmptyParentPrefab);
+      innerShell.transform.parent = parent.transform;
+      BuildApartment(innerShell.transform);
+      innerShell.transform.Rotate(new Vector3(0, 180f, 0));
+
       parent.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
       parent.transform.localPosition = new Vector3();
 
+      foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+      {
+        child.gameObject.layer = LayerMask.NameToLayer("ApartmentPreview");
+      }
+
       transform.GetChild(1).gameObject.SetActive(true);
-      selectionlUI.SetActive(true);
     }
 
-    public void BuildApartment()
+    void BuildApartment(Transform parent)
     {
-      var parent = Instantiate(EmptyParentPrefab);
-      parent.transform.parent = transform;
-      parent.name = "Apartment";
-
       var center = gatheredTiles[0].transform.position;
 
       foreach (var tile in gatheredTiles)
@@ -152,15 +153,39 @@ namespace Frenspace.Apartments
         block.transform.localPosition = (tile.transform.position - center) * -1f;
         // block.transform.localRotation = new Quaternion();
       }
+    }
+
+    public void EnterApartmentPreview()
+    {
+      lastApartment = SetupApartment();
+
+      var player = GameObject.FindWithTag("Player");
+      beforePortPosition = player.transform.position;
+      player.GetComponent<Movement>().Port(lastApartment.transform.position);
+
+      // transform.GetChild(1).gameObject.SetActive(false);
+    }
+
+    [ContextMenu("LeaveApartment")]
+    public void LeaveApartment()
+    {
+      GameObject.FindWithTag("Player").GetComponent<Movement>().Port(beforePortPosition);
+      Destroy(lastApartment);
+    }
+
+    public GameObject SetupApartment()
+    {
+      var parent = Instantiate(EmptyParentPrefab);
+      parent.transform.parent = transform;
+      parent.name = "Apartment";
+
+      BuildApartment(parent.transform);
 
       parent.transform.localRotation = new Quaternion();
       parent.transform.localPosition = selectionTransform.position;
       parent.transform.Rotate(new Vector3(0, 180f, 0));
 
-      GameObject.FindWithTag("Player").transform.position = selectionTransform.position;
-
-      selectionlUI.SetActive(false);
-      transform.GetChild(1).gameObject.SetActive(true);
+      return parent;
     }
 
     public Transform GetTileAtPos(Vector3 pos)

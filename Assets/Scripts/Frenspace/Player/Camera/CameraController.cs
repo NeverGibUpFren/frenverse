@@ -35,6 +35,8 @@ public class CameraControllercs : MonoBehaviour
   private bool mouseSideButton = false;
   private float pbuffer = 0.0f;              //Cooldownpuffer for SideButtons
 
+  private bool hidden = false;
+
   void Start()
   {
     Vector3 angles = transform.eulerAngles;
@@ -102,6 +104,23 @@ public class CameraControllercs : MonoBehaviour
     desiredDistance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomRate * Mathf.Abs(desiredDistance);
     desiredDistance = Mathf.Clamp(desiredDistance, minDistance, maxDistance);
     correctedDistance = desiredDistance;
+
+    if (correctedDistance < 0.3f || (rotation.eulerAngles.x > 81f && rotation.eulerAngles.x < 300f))
+    {
+      if (!hidden)
+      {
+        Camera.main.cullingMask = Camera.main.cullingMask &= ~(1 << LayerMask.NameToLayer("Player"));
+        hidden = true;
+      }
+    }
+    else
+    {
+      if (hidden)
+      {
+        Camera.main.cullingMask = Camera.main.cullingMask |= (1 << LayerMask.NameToLayer("Player"));
+        hidden = false;
+      }
+    }
 
     // Calculate desired camera position
     vTargetOffset = new Vector3(0, -targetHeight, 0);
