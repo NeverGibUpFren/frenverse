@@ -6,7 +6,6 @@ namespace Frenspace.Player
   /// <summary>
   /// Base movement implementation
   /// </summary>
-  [RequireComponent(typeof(CharacterController))]
   public class Movement : MonoBehaviour
   {
     public float speed = 1.0f;
