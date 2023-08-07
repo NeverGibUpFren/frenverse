@@ -36,17 +36,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 4246f838c39d1664491f67624a77237c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 69.883
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4246f838c39d1664491f67624a77237c,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.005
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4246f838c39d1664491f67624a77237c,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 76.03
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4246f838c39d1664491f67624a77237c,
         type: 3}
@@ -352,7 +352,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
 --- !u!95 &1668928166237572036
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -366,6 +366,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1

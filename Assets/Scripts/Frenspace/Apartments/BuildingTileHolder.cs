@@ -12,6 +12,7 @@ namespace Frenspace.Apartments
       {
         child.hideFlags = HideFlags.HideInHierarchy;
         child.gameObject.SetActive(false);
+        child.gameObject.isStatic = true;
       }
     }
 

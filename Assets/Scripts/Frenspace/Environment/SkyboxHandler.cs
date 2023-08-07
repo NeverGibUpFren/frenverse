@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class SkyboxHandler : MonoBehaviour
 {
   public float rotationSpeed = 1f;

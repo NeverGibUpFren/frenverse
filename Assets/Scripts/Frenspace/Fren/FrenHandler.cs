@@ -14,9 +14,7 @@ public class FrenHandler : MonoBehaviour
     public MoveEvent movement;
   }
 
-
   public GameObject frenPrefab;
-  public Transform spawnPoint;
 
   private List<Fren> frens = new List<Fren>();
 
@@ -26,15 +24,55 @@ public class FrenHandler : MonoBehaviour
     {
       if (fren == null) continue;
 
-      // TODO: handle each fren, animation, movement, etc.
+      var go = fren.go;
+      var t = go.transform;
+
+      if (fren.movement == MoveEvent.STOPPED)
+      {
+        fren.go.GetComponent<Animator>().Play("Idle");
+      }
+      else
+      {
+        var movement = new Vector3();
+        switch (fren.movement)
+        {
+          case MoveEvent.NORTH:
+            t.rotation = Quaternion.AngleAxis(0, Vector3.up);
+            movement = Vector3.forward;
+            break;
+          case MoveEvent.SOUTH:
+            t.rotation = Quaternion.AngleAxis(180, Vector3.up);
+            movement = Vector3.back;
+            break;
+          case MoveEvent.WEST:
+            t.rotation = Quaternion.AngleAxis(-90, Vector3.up);
+            movement = Vector3.left;
+            break;
+          case MoveEvent.EAST:
+            t.rotation = Quaternion.AngleAxis(90, Vector3.up);
+            movement = Vector3.right;
+            break;
+        }
+
+        // movement = Vector3.forward;
+
+        go.GetComponent<CharacterController>().Move((1f * movement) * Time.deltaTime);
+
+        go.GetComponent<Animator>().Play("Run");
+      }
+
+      if (t.position.y > 0)
+      {
+        // fake gravity
+        go.GetComponent<CharacterController>().Move(new Vector3(0, -2f, 0) * Time.deltaTime);
+      }
 
     }
   }
 
   public void Spawn(ushort id)
   {
-    var frenObj = Instantiate(frenPrefab, spawnPoint.position, spawnPoint.rotation);
-    frenObj.transform.parent = transform;
+    var frenObj = Instantiate(frenPrefab, transform.position, frenPrefab.transform.rotation, transform);
 
     var fren = new Fren() { ID = id, go = frenObj, movement = MoveEvent.STOPPED };
 
@@ -80,7 +118,7 @@ public class FrenHandler : MonoBehaviour
       }
       else
       {
-        var frenObj = Instantiate(frenPrefab, pos, spawnPoint.rotation);
+        var frenObj = Instantiate(frenPrefab, pos, transform.rotation);
         frenObj.transform.parent = transform;
 
         var fren = new Fren() { ID = Convert.ToUInt16(i), go = frenObj, movement = movement };

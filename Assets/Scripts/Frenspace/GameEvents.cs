@@ -6,8 +6,24 @@ namespace GameEvents
 
     MOVE,
 
+    ACTION,
+
     SOCIAL
   };
+
+  public enum ActionEvent : byte
+  {
+    VEHICLE
+  }
+
+  public enum VehicleEvent : byte
+  {
+    SPAWN,
+    DESPAWN,
+
+    MOUNT,
+    DISMOUNT
+  }
 
   public enum PlayerEvent : byte
   {
@@ -16,7 +32,10 @@ namespace GameEvents
     JOINED,
     LEFT,
 
-    UPDATE
+    UPDATE,
+
+    REQUEST,
+    ASSIGN
   }
 
   public enum MoveEvent : byte
@@ -25,6 +44,8 @@ namespace GameEvents
     SOUTH,
     EAST,
     WEST,
+    UP,
+    DOWN,
 
     STOPPED,
 

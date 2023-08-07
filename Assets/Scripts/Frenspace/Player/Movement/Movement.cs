@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GameEvents;
 using UnityEngine;
 
 namespace Frenspace.Player
@@ -26,9 +27,12 @@ namespace Frenspace.Player
 
     protected void Update()
     {
-      HandleKeys();
+      var keyChanged = HandleKeys();
 
-      var movement = CalculateMovement();
+      var (movement, camSnapped) = CalculateMovement();
+      movement = MovementModifier(movement);
+
+      HandleNetwork(keyChanged || camSnapped, movement);
 
       Move(movement);
 
@@ -52,22 +56,24 @@ namespace Frenspace.Player
 
     protected KeyCode[] keys = new KeyCode[] { KeyCode.W, KeyCode.S, KeyCode.A, KeyCode.D };
     protected List<KeyCode> keysPressed = new List<KeyCode>();
-    protected void HandleKeys()
+    protected bool HandleKeys()
     {
+      var changed = false;
       for (int i = 0; i < keys.Length; i++)
       {
         KeyCode key = keys[i];
         if (Input.GetKeyDown(key))
         {
           keysPressed.Add(key);
-          // start move
+          changed = true;
         }
         if (Input.GetKeyUp(key))
         {
           keysPressed.Remove(key);
-          // stop move
+          changed = true;
         }
       }
+      return changed;
     }
 
     protected float GetSnapAngle(float angleStep)
@@ -82,9 +88,28 @@ namespace Frenspace.Player
       return rotation;
     }
 
+    virtual protected void HandleNetwork(bool keyChanged, Vector3 movement)
+    {
+      if (!keyChanged) return;
+
+      var ev = MoveEvent.STOPPED;
+
+      switch (Mathf.Round(transform.eulerAngles.y))
+      {
+        case 0: ev = MoveEvent.NORTH; break;
+        case 180: ev = MoveEvent.SOUTH; break;
+        case 270: ev = MoveEvent.WEST; break;
+        case 90: ev = MoveEvent.EAST; break;
+      }
+
+      if (keysPressed.Count == 0) ev = MoveEvent.STOPPED;
+
+      Client.main?.Send(new byte[] { (byte)GameEvent.MOVE, (byte)ev });
+    }
+
     float lastCamSnapAngle = 0f;
 
-    protected Vector3 CalculateMovement()
+    protected (Vector3, bool) CalculateMovement()
     {
       Vector3 lf = transform.forward;
       transform.forward = cam.transform.forward;
@@ -94,6 +119,8 @@ namespace Frenspace.Player
 
       Vector3 movement = new Vector3();
       float moveAngle = 0f;
+
+      bool camSnapped = false;
 
       if (keysPressed.Count > 0)
       {
@@ -125,11 +152,12 @@ namespace Frenspace.Player
 
         if (rightClickView)
         {
+          camSnapped = lastCamSnapAngle != camSnapAngle;
           lastCamSnapAngle = camSnapAngle;
         }
       }
 
-      return movement;
+      return (movement, camSnapped);
     }
 
     virtual protected Vector3 MovementModifier(Vector3 movement)
@@ -139,7 +167,7 @@ namespace Frenspace.Player
 
     protected void Move(Vector3 movement)
     {
-      ctrlr.Move((speed * MovementModifier(movement)) * Time.deltaTime);
+      ctrlr.Move((speed * movement) * Time.deltaTime);
     }
 
   }

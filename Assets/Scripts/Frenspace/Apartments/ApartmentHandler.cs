@@ -24,10 +24,10 @@ namespace Frenspace.Apartments
       if (Input.GetKeyDown(KeyCode.R))
       {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 25))
+        Debug.DrawRay(ray.origin, ray.direction, Color.red, 10f);
+        if (Physics.Raycast(ray, out RaycastHit hit, 25))
         {
-          var cellPos = hit.point + ray.direction * .001f; // elongate the rayhit through the "bulding walls"
+          var cellPos = hit.point + ray.direction * .01f; // elongate the rayhit through the "bulding walls"
           cellPos = new Vector3(Mathf.Ceil(cellPos.x), Mathf.Ceil(cellPos.y), Mathf.Ceil(cellPos.z)); // ceil
           cellPos -= new Vector3(0.5f, 0.5f, 0.5f); // cell center
 
@@ -41,6 +41,7 @@ namespace Frenspace.Apartments
             return;
           }
         }
+
       }
     }
 

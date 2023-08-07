@@ -9,7 +9,7 @@ namespace Frenspace.Player
   {
     override protected Vector3 MovementModifier(Vector3 movement)
     {
-      if (transform.position.y > 0)
+      if (transform.position.y > 0.003)
       {
         // fake gravity
         movement.y = -2f;

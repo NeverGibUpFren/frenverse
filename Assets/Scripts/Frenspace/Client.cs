@@ -1,76 +1,144 @@
 using System;
-using System.Linq;
 using System.Text;
-using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
-using WebSocketSharp;
+using UnityEngine;
+using Unity.Burst;
+using Unity.Jobs;
+using Unity.Collections;
+using Unity.Networking.Transport;
 
 using GameEvents;
-using System.Collections.Generic;
+
+
+[BurstCompile]
+struct ClientUpdateJob : IJob
+{
+  public NetworkDriver Driver;
+  public NativeArray<NetworkConnection> Connection;
+
+  public NativeArray<ushort> messageAvailable;
+  public NativeArray<byte> messageBytes;
+
+  public void Execute()
+  {
+    if (!Connection[0].IsCreated)
+    {
+      return;
+    }
+
+    NetworkEvent.Type cmd;
+    while ((cmd = Connection[0].PopEvent(Driver, out DataStreamReader stream)) != NetworkEvent.Type.Empty)
+    {
+      if (cmd == NetworkEvent.Type.Connect)
+      {
+        Debug.Log("Connected, send REQUEST.");
+
+        var bytes = new NativeArray<byte>(2, Allocator.Temp);
+        bytes[0] = (byte)GameEvent.PLAYER;
+        bytes[1] = (byte)PlayerEvent.REQUEST;
+        Driver.BeginSend(Connection[0], out var writer);
+        writer.WriteBytes(bytes);
+        Driver.EndSend(writer);
+      }
+      else if (cmd == NetworkEvent.Type.Data)
+      {
+        messageAvailable[0] = Convert.ToUInt16(stream.Length);
+        stream.ReadBytes(messageBytes.GetSubArray(0, stream.Length));
+      }
+      else if (cmd == NetworkEvent.Type.Disconnect)
+      {
+        Debug.Log("We disconnected from the server. ");
+        Connection[0] = default;
+      }
+    }
+  }
+}
 
 public class Client : MonoBehaviour
 {
   public static Client main;
 
-  WebSocket ws;
-  ushort ID;
+  NetworkDriver m_Driver;
+  NativeArray<NetworkConnection> m_Connection;
 
-  GameEventHandler evntHndlr;
+  NativeArray<ushort> messageAvailable;
+  NativeArray<byte> messageBytes;
+
+  JobHandle m_ClientJobHandle;
+
+  GameEventHandler geh;
 
   void Start()
   {
-    evntHndlr = GetComponent<GameEventHandler>();
+    geh = GetComponent<GameEventHandler>();
 
-    Connect();
+    m_Driver = NetworkDriver.Create(new WebSocketNetworkInterface());
+    m_Connection = new NativeArray<NetworkConnection>(1, Allocator.Persistent);
+
+    //                                  safe MTU
+    messageBytes = new NativeArray<byte>(1000, Allocator.Persistent);
+
+    var endpoint = NetworkEndpoint.LoopbackIpv4.WithPort(7777);
+    m_Connection[0] = m_Driver.Connect(endpoint);
 
     main = this;
   }
 
-  void Connect()
+  void Update()
   {
-    ws = new WebSocket("ws://localhost:9000");
+    m_ClientJobHandle.Complete();
 
-    EventHandler<MessageEventArgs> SetID = null;
-    SetID = (s, e) =>
+    messageAvailable = new NativeArray<ushort>(1, Allocator.TempJob);
+
+    var job = new ClientUpdateJob
     {
-      ID = BitConverter.ToUInt16(e.RawData);
-      evntHndlr.SpawnPlayer(ID);
-      ws.OnMessage += HandleMsg;
-      ws.OnMessage -= SetID;
+      Driver = m_Driver,
+      Connection = m_Connection,
+      messageAvailable = messageAvailable,
+      messageBytes = messageBytes
     };
-    ws.OnMessage += SetID;
 
-    ws.OnClose += (s, e) => Debug.Log(2);
-
-    ws.Connect();
+    m_ClientJobHandle = m_Driver.ScheduleUpdate();
+    m_ClientJobHandle = job.Schedule(m_ClientJobHandle);
   }
 
-  void HandleMsg(object sender, MessageEventArgs e)
+  void LateUpdate()
   {
-    evntHndlr.HandleEvent(e.RawData);
-  }
+    m_ClientJobHandle.Complete();
 
+    if (messageAvailable[0] > 0)
+    {
+      var bytes = messageBytes.GetSubArray(0, messageAvailable[0]);
+      geh?.HandleEvent(bytes.ToArray());
+    }
 
-  [ContextMenu("Test")]
-  public void Test()
-  {
-    ws.Close();
-    Debug.Log(1);
+    messageAvailable.Dispose();
   }
 
   void OnDestroy()
   {
-    ws.Close();
+    m_ClientJobHandle.Complete();
+    m_Driver.Dispose();
+    m_Connection.Dispose();
+    messageBytes.Dispose();
   }
 
-  public void Send(params byte[] events)
+  [ContextMenu("Test")]
+  public void Test()
   {
-    ws.Send(events);
+    Send(new byte[] { (byte)GameEvent.PLAYER, (byte)PlayerEvent.JOINED });
   }
 
-  public void Send(string s, params byte[] events)
+  public void Send(ReadOnlySpan<byte> bytes)
   {
-    ws.Send(events.Concat(Encoding.UTF8.GetBytes(s)).ToArray());
+    m_ClientJobHandle.Complete();
+    m_Driver.BeginSend(m_Connection[0], out var writer);
+    foreach (var b in bytes)
+    {
+      writer.WriteByte(b);
+    }
+    m_Driver.EndSend(writer);
   }
-
 }
