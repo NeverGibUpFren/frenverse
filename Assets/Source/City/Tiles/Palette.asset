@@ -96,9 +96,6 @@ MonoBehaviour:
   - color1: 14
     color2: 4
     isMatch: 1
-  - color1: 4
-    color2: 4
-    isMatch: 0
   - color1: 18
     color2: 19
     isMatch: 1
@@ -135,3 +132,6 @@ MonoBehaviour:
   - color1: 17
     color2: 9
     isMatch: 1
+  - color1: 4
+    color2: 4
+    isMatch: 0

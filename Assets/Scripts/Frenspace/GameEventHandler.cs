@@ -37,6 +37,9 @@ public class GameEventHandler : MonoBehaviour
             case PlayerEvent.REQUEST:
               SpawnFren(id);
               break;
+            case PlayerEvent.LEFT:
+              RemoveFren(id);
+              break;
           }
           break;
         }

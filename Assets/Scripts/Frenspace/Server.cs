@@ -11,7 +11,7 @@ using Unity.Networking.Transport;
 using GameEvents;
 
 
-[BurstCompile]
+// [BurstCompile]
 struct ServerUpdateConnectionsJob : IJob
 {
   public NetworkDriver Driver;
@@ -39,19 +39,23 @@ struct ServerUpdateConnectionsJob : IJob
   }
 }
 
-[BurstCompile]
+// [BurstCompile]
 struct ServerUpdateJob : IJobParallelForDefer
 {
   public NetworkDriver.Concurrent Driver;
+
+  [NativeDisableParallelForRestriction] // TODO: This might not be safe, probably do a seperate job for broadcasting
   public NativeArray<NetworkConnection> Connections;
 
+  [NativeDisableParallelForRestriction]
   public NativeArray<ushort> indices;
+  [NativeDisableParallelForRestriction]
   public NativeArray<byte> allMessageBytes;
 
   readonly (byte, byte) IdBytes(int i)
   {
     var id = Convert.ToUInt16(i);
-    return ((byte)(id >> 8), (byte)(id >> 0));
+    return ((byte)(id >> 0), (byte)(id >> 8));
   }
 
   public void Execute(int i)
@@ -98,10 +102,7 @@ struct ServerUpdateJob : IJobParallelForDefer
             break;
         }
 
-        var lastIdx = i == 0 ? 0 : indices[i - 1];
-        indices[i] = Convert.ToUInt16(lastIdx + bytes.Length);
-        var currentBytesSlot = allMessageBytes.GetSubArray(lastIdx, bytes.Length);
-        bytes.CopyTo(currentBytesSlot);
+        WriteToCurrentBytesSlot(bytes, i);
 
         bytes.Dispose();
       }
@@ -117,11 +118,34 @@ struct ServerUpdateJob : IJobParallelForDefer
         bytes[3] = (byte)PlayerEvent.LEFT;
 
         Broadcast(bytes, i);
+
+        WriteToCurrentBytesSlot(bytes, i);
+
         bytes.Dispose();
 
         Connections[i] = default;
       }
     }
+  }
+
+  void WriteToCurrentBytesSlot(NativeArray<byte> bytes, int i)
+  {
+    var bytesCursor = 0;
+    var freeIdxSlot = 0;
+    for (int j = 0; j < indices.Length; j++)
+    {
+      if (indices[j] == 0)
+      {
+        freeIdxSlot = j;
+        bytesCursor = j == 0 ? 0 : indices[j - i];
+        break;
+      }
+    }
+
+    indices[freeIdxSlot] = Convert.ToUInt16(bytesCursor + bytes.Length);
+    var currentBytesSlot = allMessageBytes.GetSubArray(bytesCursor, bytes.Length);
+    bytes.CopyTo(currentBytesSlot);
+    Debug.Log($"{i}: bytes {bytesCursor} to {bytesCursor + bytes.Length}");
   }
 
   void Broadcast(NativeArray<byte> bytes, int self)
@@ -210,6 +234,21 @@ public class Server : MonoBehaviour
 
       var bytes = allMessageBytes.GetSubArray(lastIdx, idx - lastIdx);
       geh?.HandleEvent(bytes.ToArray());
+
+      switch ((GameEvent)bytes[2])
+      {
+        case GameEvent.PLAYER:
+          {
+            switch ((PlayerEvent)bytes[3])
+            {
+              case PlayerEvent.REQUEST:
+                // TODO: send game state
+                geh.frenHandler.GetFrens();
+                break;
+            }
+            break;
+          }
+      }
 
       lastIdx = idx;
     }

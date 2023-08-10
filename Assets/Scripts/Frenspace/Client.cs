@@ -12,7 +12,7 @@ using Unity.Networking.Transport;
 using GameEvents;
 
 
-[BurstCompile]
+// [BurstCompile]
 struct ClientUpdateJob : IJob
 {
   public NetworkDriver Driver;
