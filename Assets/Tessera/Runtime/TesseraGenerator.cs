@@ -462,7 +462,7 @@ namespace Tessera
 
     public ITesseraTileOutput[] GetTileOutputs(bool forceIncremental = false)
     {
-      var components = GetComponents<ITesseraTileOutput>();
+      var components = GetComponents<ITesseraTileOutput>().Where(o => ((MonoBehaviour)o).enabled).ToArray();
       if (components.Length > 0)
       {
         return components;
