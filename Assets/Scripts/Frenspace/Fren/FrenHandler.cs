@@ -1,94 +1,152 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 using GameEvents;
+using UnityEngine.Jobs;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Burst;
+using GameStates;
 
 public class FrenHandler : MonoBehaviour
 {
+  [BurstCompile]
+  public struct MovementJob : IJobParallelForTransform
+  {
+    [ReadOnly]
+    public NativeArray<MovementState> movements;
+
+    [ReadOnly]
+    public float deltaTime;
+
+    public void Execute(int i, TransformAccess transform)
+    {
+      var m = movements[i];
+      if (m == MovementState.STOPPED) return;
+
+      var pos = transform.position;
+      Quaternion rotation = default;
+      Vector3 movement = default;
+
+      switch (m)
+      {
+        case MovementState.NORTH:
+          rotation = Quaternion.AngleAxis(0, Vector3.up);
+          movement = Vector3.forward;
+          break;
+        case MovementState.SOUTH:
+          rotation = Quaternion.AngleAxis(180, Vector3.up);
+          movement = Vector3.back;
+          break;
+        case MovementState.WEST:
+          rotation = Quaternion.AngleAxis(-90, Vector3.up);
+          movement = Vector3.left;
+          break;
+        case MovementState.EAST:
+          rotation = Quaternion.AngleAxis(90, Vector3.up);
+          movement = Vector3.right;
+          break;
+      }
+
+      var speed = 1f;
+      pos += speed * movement * deltaTime;
+
+      // TODO: vehicle handling
+
+      if (transform.position.y > 0)
+      {
+        // fake gravity
+        pos -= new Vector3(0, 2f, 0) * deltaTime;
+      }
+
+      transform.position = pos;
+      transform.rotation = rotation;
+    }
+  }
+
   public class Fren
   {
     public ushort ID;
     public GameObject go;
 
-    public MoveEvent movement;
+    public ushort instanceId;
+    public InstanceState instance;
+
+    public MovementState movement;
+    public VehicleState vehicle;
+
+
   }
 
   public GameObject frenPrefab;
 
   private List<Fren> frens = new List<Fren>();
 
-  void Update()
+  private TransformAccessArray m_AccessArray;
+  private NativeArray<MovementState> m_MoveArray;
+  private JobHandle m_moveJobHandle;
+
+  void Start()
   {
-    foreach (var fren in frens)
-    {
-      if (fren == null) continue;
-
-      var go = fren.go;
-      var t = go.transform;
-
-      if (fren.movement == MoveEvent.STOPPED)
-      {
-        fren.go.GetComponent<Animator>().Play("Idle");
-      }
-      else
-      {
-        var movement = new Vector3();
-        switch (fren.movement)
-        {
-          case MoveEvent.NORTH:
-            t.rotation = Quaternion.AngleAxis(0, Vector3.up);
-            movement = Vector3.forward;
-            break;
-          case MoveEvent.SOUTH:
-            t.rotation = Quaternion.AngleAxis(180, Vector3.up);
-            movement = Vector3.back;
-            break;
-          case MoveEvent.WEST:
-            t.rotation = Quaternion.AngleAxis(-90, Vector3.up);
-            movement = Vector3.left;
-            break;
-          case MoveEvent.EAST:
-            t.rotation = Quaternion.AngleAxis(90, Vector3.up);
-            movement = Vector3.right;
-            break;
-        }
-
-        // movement = Vector3.forward;
-
-        go.GetComponent<CharacterController>().Move((1f * movement) * Time.deltaTime);
-
-        go.GetComponent<Animator>().Play("Run");
-      }
-
-      if (t.position.y > 0)
-      {
-        // fake gravity
-        go.GetComponent<CharacterController>().Move(new Vector3(0, -2f, 0) * Time.deltaTime);
-      }
-
-    }
+    m_AccessArray = new TransformAccessArray(0);
+    m_MoveArray = new NativeArray<MovementState>(0, Allocator.Persistent);
   }
 
-  public void Spawn(ushort id)
+  void Update()
   {
-    var frenObj = Instantiate(frenPrefab, transform.position, frenPrefab.transform.rotation, transform);
+    m_moveJobHandle.Complete();
 
-    var fren = new Fren() { ID = id, go = frenObj, movement = MoveEvent.STOPPED };
+    var job = new MovementJob() { deltaTime = Time.deltaTime, movements = m_MoveArray };
+    m_moveJobHandle = job.Schedule(m_AccessArray);
+  }
 
-    if (id < frens.Count)
+  void OnDestroy()
+  {
+    m_moveJobHandle.Complete();
+    m_MoveArray.Dispose();
+    m_AccessArray.Dispose();
+  }
+
+  public void Spawn(Fren fren, bool update = true)
+  {
+    var frenObj = Instantiate(frenPrefab, fren.go.transform.position, frenPrefab.transform.rotation, transform);
+    fren.go = frenObj;
+
+    if (fren.ID < frens.Count)
     {
-      frens[id] = fren;
+      frens[fren.ID] = fren;
     }
     else
     {
       frens.Add(fren);
     }
+
+    // TODO: handle fren states
+
+    if (!update) return;
+    UpdateJobTransforms();
   }
 
-  public void SetMovementState(ushort id, MoveEvent movement)
+  void UpdateJobTransforms()
   {
+    m_moveJobHandle.Complete();
+    m_MoveArray.Dispose();
+    m_AccessArray.Dispose();
+    m_AccessArray = new TransformAccessArray(frens.Where(f => f != null).Select(f => f.go.transform).ToArray());
+    m_MoveArray = new NativeArray<MovementState>(frens.Where(f => f != null).Select(f => f.movement).ToArray(), Allocator.Persistent);
+  }
+
+  public void SetMovementState(ushort id, MovementState movement)
+  {
+    m_moveJobHandle.Complete();
+
+    m_MoveArray[id] = movement;
+
     frens[id].movement = movement;
+
+    frens[id].go.GetComponent<Animator>().Play(movement == MovementState.STOPPED ? "Idle" : "Run");
   }
 
   public void Port(ushort id, Vector3 to)
@@ -107,25 +165,23 @@ public class FrenHandler : MonoBehaviour
     return frens;
   }
 
-  public void SetFrens(List<(bool empty, Vector3 pos, MoveEvent movement)> list)
+  public void SetFrens(List<Fren> list)
   {
-    for (int i = 0; i < list.Count; i++)
+    foreach (var of in frens)
     {
-      (bool empty, Vector3 pos, MoveEvent movement) = list[i];
-      if (empty)
-      {
-        frens.Add(null);
-      }
-      else
-      {
-        var frenObj = Instantiate(frenPrefab, pos, transform.rotation);
-        frenObj.transform.parent = transform;
-
-        var fren = new Fren() { ID = Convert.ToUInt16(i), go = frenObj, movement = movement };
-
-        frens.Add(fren);
-      }
+      Destroy(of.go);
     }
+
+    var highestId = list.Max(f => f.ID); // one other options is just having a list with MAX_CONNECTIONS capacity
+
+    frens = new List<Fren>(highestId);
+
+    foreach (var fren in list)
+    {
+      Spawn(fren, false);
+    }
+
+    UpdateJobTransforms();
   }
 
 }

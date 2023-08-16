@@ -2,17 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using GameEvents;
+using GameStates;
 using UnityEngine;
 
 public class GameEventHandler : MonoBehaviour
 {
   public GameObject playerPrefab;
+
+  [HideInInspector]
   public FrenHandler frenHandler;
 
   private ushort ID = ushort.MaxValue;
 
   private GameObject player;
 
+
+  void Start()
+  {
+    frenHandler = GetComponent<FrenHandler>();
+  }
 
   public void HandleEvent(byte[] e)
   {
@@ -24,20 +32,27 @@ public class GameEventHandler : MonoBehaviour
         {
           switch ((PlayerEvent)e[3])
           {
-            case PlayerEvent.ASSIGN:
-              ID = id;
-              SpawnPlayer();
+            case PlayerEvent.REQUEST: // server
+              SpawnFren(new FrenHandler.Fren()
+              {
+                ID = id,
+                go = new GameObject() { transform = { position = transform.position } },
+
+                instanceId = 0,
+                instance = InstanceState.WORLD,
+
+                movement = MovementState.STOPPED,
+                vehicle = VehicleState.UNMOUNTED
+              });
               break;
-            case PlayerEvent.LIST:
+            case PlayerEvent.LIST: // client
+              ID = id;
               HandlePlayerList(e);
               break;
-            case PlayerEvent.JOINED:
-              SpawnFren(id);
+            case PlayerEvent.JOINED: // client
+              SpawnFren(BytesUtility.UnpackFren(new ReadOnlySpan<byte>(e, 4, 19).ToArray()));
               break;
-            case PlayerEvent.REQUEST:
-              SpawnFren(id);
-              break;
-            case PlayerEvent.LEFT:
+            case PlayerEvent.LEFT:  // client
               RemoveFren(id);
               break;
           }
@@ -45,9 +60,9 @@ public class GameEventHandler : MonoBehaviour
         }
       case GameEvent.MOVE:
         {
-          switch ((MoveEvent)e[3])
+          switch ((MovementState)e[3])
           {
-            case MoveEvent.PORT:
+            case MovementState.PORT:
               if (id == ID)
               {
                 PortPlayer(new ReadOnlySpan<byte>(e, 4, e.Length - 4));
@@ -58,7 +73,7 @@ public class GameEventHandler : MonoBehaviour
               }
               break;
             default:
-              MoveFren(id, (MoveEvent)e[3]);
+              MoveFren(id, (MovementState)e[3]);
               break;
           }
           break;
@@ -78,30 +93,40 @@ public class GameEventHandler : MonoBehaviour
 
   void HandlePlayerList(byte[] bytes)
   {
-    var frens = new List<(bool empty, Vector3 pos, MoveEvent movement)>();
-    BytesUtility.ForEachChunk(new ReadOnlySpan<byte>(bytes, 4, bytes.Length - 4), 14, (chunk, i) =>
+    var frens = new List<FrenHandler.Fren>();
+
+    var i = 4; // skip id and events
+    var chunkSize = 19;
+    while (i < bytes.Length)
     {
-      if (chunk[0] == 0x00)
+      var b = new ReadOnlySpan<byte>(bytes, i, chunkSize).ToArray();
+
+      var f = BytesUtility.UnpackFren(b);
+      if (f.ID == ID)
       {
-        frens.Add((false, new Vector3(), MoveEvent.STOPPED));
+        SpawnPlayer(f);
       }
       else
       {
-        frens.Add((true, BytesUtility.ToVector3(new ReadOnlySpan<byte>(chunk, 2, 12).ToArray()), (MoveEvent)chunk[1]));
+        frens.Add(f);
       }
-    });
-    frenHandler.SetFrens(frens);
+
+      i += chunkSize;
+    }
+
+    if (frens.Count > 0)
+      frenHandler.SetFrens(frens);
   }
 
-  public void SpawnPlayer()
+  public void SpawnPlayer(FrenHandler.Fren playerFren)
   {
-    player = Instantiate(playerPrefab, transform.position, transform.rotation);
+    player = Instantiate(playerPrefab, playerFren.go.transform.position, transform.rotation);
     Camera.main.GetComponent<CameraControllercs>().target = player;
   }
 
-  public void SpawnFren(ushort id)
+  public void SpawnFren(FrenHandler.Fren fren)
   {
-    frenHandler.Spawn(id);
+    frenHandler.Spawn(fren);
   }
 
   public void RemoveFren(ushort id)
@@ -121,7 +146,7 @@ public class GameEventHandler : MonoBehaviour
     frenHandler.Port(id, to);
   }
 
-  void MoveFren(ushort id, MoveEvent e)
+  void MoveFren(ushort id, MovementState e)
   {
     frenHandler.SetMovementState(id, e);
   }

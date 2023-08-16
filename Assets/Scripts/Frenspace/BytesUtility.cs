@@ -3,18 +3,47 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GameStates;
 using UnityEngine;
 
 public static class BytesUtility
 {
+  public static byte[] PackFren(FrenHandler.Fren fren)
+  {
+    return new byte[0]
+    .Concat(BitConverter.GetBytes(Convert.ToUInt16(fren.ID)))
+    .Concat(FromVector3(fren.go.transform.position))
+    .Concat(BitConverter.GetBytes(Convert.ToUInt16(fren.instanceId)))
+    .Concat(new byte[] { (byte)fren.instance })
+    .Concat(new byte[] { (byte)fren.movement })
+    .Concat(new byte[] { (byte)fren.vehicle })
+    .ToArray();
+  }
+
+  public static FrenHandler.Fren UnpackFren(byte[] bytes)
+  {
+    var fren = new FrenHandler.Fren() { go = new GameObject() };
+
+    fren.ID = BitConverter.ToUInt16(new ReadOnlySpan<byte>(bytes, 0, 2));
+
+    fren.go.transform.position = ToVector3(new ReadOnlySpan<byte>(bytes, 2, 12).ToArray());
+
+    fren.instanceId = BitConverter.ToUInt16(new ReadOnlySpan<byte>(bytes, 14, 2));
+    fren.instance = (InstanceState)bytes[16];
+
+    fren.movement = (MovementState)bytes[17];
+    fren.vehicle = (VehicleState)bytes[18];
+
+    return fren;
+  }
 
   public static Vector3 ToVector3(byte[] bytes)
   {
     // TODO: not sure if span is the most efficient way of doing this
     return new Vector3(
-        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 0, 2)),
-        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 2, 4)),
-        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 4, 6))
+        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 0, 4)),
+        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 4, 4)),
+        BitConverter.ToSingle(new ReadOnlySpan<byte>(bytes, 8, 4))
     );
   }
 
@@ -34,19 +63,6 @@ public static class BytesUtility
   public static byte[] FromString(string s)
   {
     return Encoding.UTF8.GetBytes(s);
-  }
-
-  public static void ForEachChunk(ReadOnlySpan<byte> bytes, int chunkSize, Action<byte[], int> fn)
-  {
-    var idx = 0;
-    var i = 0;
-    var byteArr = bytes.ToArray();
-    while (i < bytes.Length)
-    {
-      fn(new ReadOnlySpan<byte>(byteArr, i, chunkSize).ToArray(), idx);
-      i += chunkSize;
-      idx++;
-    }
   }
 
   public static void LogBytes(ReadOnlySpan<byte> bytes)

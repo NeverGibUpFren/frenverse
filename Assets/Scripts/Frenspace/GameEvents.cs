@@ -13,7 +13,24 @@ namespace GameEvents
 
   public enum ActionEvent : byte
   {
-    VEHICLE
+    INSTANCE,
+
+    VEHICLE,
+
+    MEDIA
+  }
+
+  public enum MediaEvent : byte
+  {
+    TV,
+
+    MUSIC
+  }
+
+  public enum BaseMediaEvent : byte
+  {
+    PLAY,
+    PAUSE
   }
 
   public enum VehicleEvent : byte
@@ -38,19 +55,7 @@ namespace GameEvents
     ASSIGN
   }
 
-  public enum MoveEvent : byte
-  {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST,
-    UP,
-    DOWN,
 
-    STOPPED,
-
-    PORT
-  }
 
   public enum SocialEvent : byte
   {

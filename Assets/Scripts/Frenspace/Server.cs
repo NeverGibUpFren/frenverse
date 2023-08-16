@@ -80,13 +80,17 @@ struct ServerUpdateJob : IJobParallelForDefer
               {
                 case PlayerEvent.REQUEST:
                   {
+                    // set the id to the request bytes, since ASSIGN is yet to happen
+                    bytes[0] = b1;
+                    bytes[1] = b2;
+
                     var req = new NativeArray<byte>(4, Allocator.Temp);
                     req[0] = b1;
                     req[1] = b2;
                     req[2] = (byte)GameEvent.PLAYER;
-                    req[3] = (byte)PlayerEvent.ASSIGN;
+                    // req[3] = (byte)PlayerEvent.ASSIGN;
 
-                    Send(req, i);
+                    // Send(req, i);
 
                     req[3] = (byte)PlayerEvent.JOINED;
                     Broadcast(req, i);
@@ -190,6 +194,8 @@ public class Server : MonoBehaviour
     //                                      MAX_CONNS * safe MTU size
     allMessageBytes = new NativeArray<byte>(MAX_CONNECTIONS * 1000, Allocator.Persistent);
 
+    indices = new NativeArray<ushort>(0, Allocator.TempJob);
+
     var endpoint = NetworkEndpoint.AnyIpv4.WithPort(7777);
     if (m_Driver.Bind(endpoint) != 0)
     {
@@ -201,6 +207,10 @@ public class Server : MonoBehaviour
 
   void Update()
   {
+    m_ServerJobHandle.Complete();
+
+    HandleMessages();
+
     var connectionJob = new ServerUpdateConnectionsJob
     {
       Driver = m_Driver,
@@ -222,10 +232,8 @@ public class Server : MonoBehaviour
     m_ServerJobHandle = serverUpdateJob.Schedule(m_Connections, 1, m_ServerJobHandle);
   }
 
-  void LateUpdate()
+  void HandleMessages()
   {
-    m_ServerJobHandle.Complete();
-
     var lastIdx = 0;
     for (int i = 0; i < indices.Length; i++)
     {
@@ -242,8 +250,25 @@ public class Server : MonoBehaviour
             switch ((PlayerEvent)bytes[3])
             {
               case PlayerEvent.REQUEST:
-                // TODO: send game state
-                geh.frenHandler.GetFrens();
+                // TODO: this is ugly since this runs on the main thread
+                // but it's hard since we need to access to whole game state
+                // so this is a place where future optimization could be made
+
+                // send game state
+                var b = new byte[] { 0x00, 0x00, (byte)GameEvent.PLAYER, (byte)PlayerEvent.LIST }.AsEnumerable();
+                foreach (var fb in geh.frenHandler.GetFrens().Where(f => f != null).Select(f => BytesUtility.PackFren(f)))
+                {
+                  b = b.Concat(fb);
+                }
+
+                var id = BitConverter.ToUInt16(new byte[] { bytes[0], bytes[1] });
+                m_Driver.BeginSend(m_Connections[id], out var writer);
+                foreach (var rb in b)
+                {
+                  writer.WriteByte(rb);
+                }
+                m_Driver.EndSend(writer);
+
                 break;
             }
             break;

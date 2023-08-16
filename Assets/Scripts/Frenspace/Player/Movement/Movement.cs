@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using GameEvents;
+using GameStates;
 using UnityEngine;
 
 namespace Frenspace.Player
@@ -92,19 +93,19 @@ namespace Frenspace.Player
     {
       if (!keyChanged) return;
 
-      var ev = MoveEvent.STOPPED;
+      var ms = MovementState.STOPPED;
 
       switch (Mathf.Round(transform.eulerAngles.y))
       {
-        case 0: ev = MoveEvent.NORTH; break;
-        case 180: ev = MoveEvent.SOUTH; break;
-        case 270: ev = MoveEvent.WEST; break;
-        case 90: ev = MoveEvent.EAST; break;
+        case 0: ms = MovementState.NORTH; break;
+        case 180: ms = MovementState.SOUTH; break;
+        case 270: ms = MovementState.WEST; break;
+        case 90: ms = MovementState.EAST; break;
       }
 
-      if (keysPressed.Count == 0) ev = MoveEvent.STOPPED;
+      if (keysPressed.Count == 0) ms = MovementState.STOPPED;
 
-      Client.main?.Send(new byte[] { (byte)GameEvent.MOVE, (byte)ev });
+      Client.main?.Send(new byte[] { (byte)GameEvent.MOVE, (byte)ms });
     }
 
     float lastCamSnapAngle = 0f;

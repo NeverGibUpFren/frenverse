@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using Frenspace.Player;
 using UnityEngine;
+using UnityEditor;
 
-using Tessera;
 
 namespace Frenspace.Apartments
 {
   public class ApartmentHandler : MonoBehaviour
   {
-    public GameObject WallPrefab;
     public TesseraDataOutput cityTileData;
 
 
@@ -25,17 +24,17 @@ namespace Frenspace.Apartments
 
         if (Physics.Raycast(ray, out RaycastHit hit, 25))
         {
-          var cellPos = hit.point + ray.direction.normalized * .1f; // elongate the rayhit through the "bulding walls"
-          cellPos = new Vector3(Mathf.Ceil(cellPos.x), Mathf.Ceil(cellPos.y), Mathf.Ceil(cellPos.z)); // ceil
-          cellPos -= new Vector3(0.5f, 0.5f, 0.5f); // cell center
+          var cellPos = hit.point + ray.direction * .4f; // elongate the rayhit through the "bulding walls"
+          cellPos = new Vector3(Mathf.Round(cellPos.x), Mathf.Floor(cellPos.y), Mathf.Round(cellPos.z)); // ceil
+          cellPos += new Vector3(0f, 0.5f, 0f); // cell center
 
-          // Debug.Log(cellPos);
-          // Debug.DrawLine(ray.origin, hit.point + ray.direction.normalized * .1f, Color.red, 10f);
+          Debug.DrawLine(ray.origin, hit.point + ray.direction * .1f, Color.red, 10f);
+          Debug.DrawLine(cellPos, cellPos + Vector3.up, Color.red, 10f);
           var t = cityTileData.GetTileAt(cellPos);
           if (t != null)
           {
             GatherTiles(t);
-            EnterApartmentPreview();
+            EnterApartmentPreview(cellPos);
             // SetupApartmentPreview(tile.transform);
           }
         }
@@ -46,7 +45,7 @@ namespace Frenspace.Apartments
     {
       var gathered = new List<TesseraDataOutput.TileData> { t };
       int rev = 0;
-      GatherNeighbors(t.name.Split("Tile")[0], t.pos, gathered, ref rev);
+      GatherNeighbors(t.name.Split("_")[0], t.pos, gathered, ref rev);
 
       if (gathered.Count < 1)
       {
@@ -109,8 +108,6 @@ namespace Frenspace.Apartments
 
     void BuildApartment(Transform parent)
     {
-      var center = gatheredTiles[0].pos;
-
       foreach (var tile in gatheredTiles)
       {
         var block = new GameObject();
@@ -120,38 +117,50 @@ namespace Frenspace.Apartments
         var dirs = new Vector3[] { Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
         foreach (var dir in dirs)
         {
-          var td = GetTileAtPos(tile.pos + dir) != null;
-          if (!td)
+          var path = "Apartments/Wall";
+          Debug.DrawLine(tile.pos + dir, tile.pos + dir + Vector3.up, Color.green, 10f);
+          var td = cityTileData.GetTileAt(tile.pos + dir);
+          var splits = tile.name.Split("_");
+          if (td == null)
           {
-            // place wall
-            var wall = Instantiate(WallPrefab);
-            wall.transform.parent = block.transform;
-            wall.transform.localPosition -= dir * 0.5f;
-            wall.transform.Rotate(new Vector3(dir.x, 1f, dir.z - 1f) * 90f);
-            var rot = wall.transform.rotation;
-            wall.transform.rotation = Quaternion.Euler(0, rot.eulerAngles.y, rot.eulerAngles.z);
+            // no tile means its air so we use our own type of tile
+            path += $"_{splits[1]}_{splits[2]}";
           }
+          else
+          {
+            // if tile is the same type we don't want a wall
+            if (td.name.Contains(splits[0]))
+              continue;
+          }
+
+          var prefab = Resources.Load<GameObject>(path);
+          var wall = Instantiate(prefab);
+          wall.transform.parent = block.transform;
+          wall.transform.localPosition -= dir * 0.5f;
+          wall.transform.Rotate(new Vector3(dir.x, 1f, dir.z - 1f) * 90f);
+          var rot = wall.transform.rotation;
+          wall.transform.rotation = Quaternion.Euler(0, rot.eulerAngles.y, rot.eulerAngles.z);
         }
 
         // top and bottom
-        var top = Instantiate(WallPrefab);
+        var top = Instantiate(Resources.Load<GameObject>("Apartments/Ceiling"));
         top.transform.parent = block.transform;
         top.transform.localPosition += Vector3.up * 0.5f;
-        top.transform.Rotate(new Vector3(0, 0, 90f));
+        top.transform.Rotate(new Vector3(0, 0, 180f));
 
-        var bottom = Instantiate(WallPrefab);
+        var bottom = Instantiate(Resources.Load<GameObject>("Apartments/Floor"));
         bottom.transform.parent = block.transform;
         bottom.transform.localPosition += Vector3.down * 0.5f;
-        bottom.transform.Rotate(new Vector3(0, 0, -90f));
+        bottom.transform.Rotate(new Vector3(0, 0, 0f));
 
-        block.transform.localPosition = (tile.pos - center) * -1f;
+        block.transform.localPosition = (tile.pos - parent.transform.position) * -1f;
         // block.transform.localRotation = new Quaternion();
       }
     }
 
-    public void EnterApartmentPreview()
+    public void EnterApartmentPreview(Vector3 pos)
     {
-      lastApartment = SetupApartment();
+      lastApartment = SetupApartment(pos);
 
       var player = GameObject.FindWithTag("Player");
       beforePortPosition = player.transform.position;
@@ -167,31 +176,19 @@ namespace Frenspace.Apartments
       Destroy(lastApartment);
     }
 
-    public GameObject SetupApartment()
+    public GameObject SetupApartment(Vector3 pos)
     {
       var parent = new GameObject();
       parent.transform.parent = transform;
       parent.name = "Apartment";
+      parent.transform.rotation = new Quaternion();
+      parent.transform.position = pos;
 
       BuildApartment(parent.transform);
 
-      parent.transform.localRotation = new Quaternion();
-      parent.transform.localPosition = gatheredTiles[0].pos;
       parent.transform.Rotate(new Vector3(0, 180f, 0));
-
       return parent;
     }
 
-    public TesseraDataOutput.TileData GetTileAtPos(Vector3 pos)
-    {
-      foreach (TesseraDataOutput.TileData child in gatheredTiles)
-      {
-        if (Vector3.SqrMagnitude(child.pos - pos) < 0.01f)
-        {
-          return child;
-        }
-      }
-      return null;
-    }
   }
 }
