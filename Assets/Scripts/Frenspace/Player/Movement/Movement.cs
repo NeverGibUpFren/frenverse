@@ -3,13 +3,14 @@ using GameEvents;
 using GameStates;
 using UnityEngine;
 
-namespace Frenspace.Player
-{
+namespace Frenspace.Player {
+
   /// <summary>
   /// Base movement implementation
   /// </summary>
-  public class Movement : MonoBehaviour
-  {
+
+  [RequireComponent(typeof(BoxCollider))]
+  public class Movement : MonoBehaviour {
     public float speed = 1.0f;
 
     protected Camera cam;
@@ -17,8 +18,7 @@ namespace Frenspace.Player
     protected MovementAnimation anmtr;
 
 
-    virtual protected void Start()
-    {
+    virtual protected void Start() {
       ctrlr = gameObject.GetComponent<CharacterController>();
       anmtr = gameObject.GetComponent<MovementAnimation>();
       cam = Camera.main;
@@ -26,11 +26,21 @@ namespace Frenspace.Player
       // TODO: handle chat input
     }
 
-    protected void Update()
-    {
+    bool isCurrentlyColliding;
+
+    void OnCollisionEnter(Collision col) {
+      Debug.Log(col.gameObject.name);
+      isCurrentlyColliding = true;
+    }
+
+    void OnCollisionExit(Collision col) {
+      isCurrentlyColliding = false;
+    }
+
+    protected void Update() {
       var keyChanged = HandleKeys();
 
-      var (movement, camSnapped) = CalculateMovement();
+      var (movement, camSnapped, collision) = CalculateMovement();
       movement = MovementModifier(movement);
 
       HandleNetwork(keyChanged || camSnapped, movement);
@@ -40,36 +50,17 @@ namespace Frenspace.Player
       anmtr?.Animate(movement);
     }
 
-    public void Port(Vector3 to)
-    {
-      this.enabled = false;
-
-      this.Defer(() =>
-      {
-        transform.position = to;
-
-        this.Defer(() =>
-        {
-          this.enabled = true;
-        });
-      });
-    }
-
     protected KeyCode[] keys = new KeyCode[] { KeyCode.W, KeyCode.S, KeyCode.A, KeyCode.D };
     protected List<KeyCode> keysPressed = new List<KeyCode>();
-    protected bool HandleKeys()
-    {
+    protected bool HandleKeys() {
       var changed = false;
-      for (int i = 0; i < keys.Length; i++)
-      {
+      for (int i = 0; i < keys.Length; i++) {
         KeyCode key = keys[i];
-        if (Input.GetKeyDown(key))
-        {
+        if (Input.GetKeyDown(key)) {
           keysPressed.Add(key);
           changed = true;
         }
-        if (Input.GetKeyUp(key))
-        {
+        if (Input.GetKeyUp(key)) {
           keysPressed.Remove(key);
           changed = true;
         }
@@ -77,26 +68,22 @@ namespace Frenspace.Player
       return changed;
     }
 
-    protected float GetSnapAngle(float angleStep)
-    {
+    protected float GetSnapAngle(float angleStep) {
       float yRotation = transform.localRotation.eulerAngles.y;
       yRotation = (float)Mathf.RoundToInt(yRotation / angleStep) * angleStep;
       return yRotation;
     }
 
-    virtual protected Quaternion RotationModifier(Quaternion rotation)
-    {
+    virtual protected Quaternion RotationModifier(Quaternion rotation) {
       return rotation;
     }
 
-    virtual protected void HandleNetwork(bool keyChanged, Vector3 movement)
-    {
+    virtual protected void HandleNetwork(bool keyChanged, Vector3 movement) {
       if (!keyChanged) return;
 
       var ms = MovementState.STOPPED;
 
-      switch (Mathf.Round(transform.eulerAngles.y))
-      {
+      switch (Mathf.Round(transform.eulerAngles.y)) {
         case 0: ms = MovementState.NORTH; break;
         case 180: ms = MovementState.SOUTH; break;
         case 270: ms = MovementState.WEST; break;
@@ -110,8 +97,7 @@ namespace Frenspace.Player
 
     float lastCamSnapAngle = 0f;
 
-    protected (Vector3, bool) CalculateMovement()
-    {
+    protected (Vector3, bool, bool) CalculateMovement() {
       Vector3 lf = transform.forward;
       transform.forward = cam.transform.forward;
       float camSnapAngle = GetSnapAngle(90f);
@@ -123,14 +109,12 @@ namespace Frenspace.Player
 
       bool camSnapped = false;
 
-      if (keysPressed.Count > 0)
-      {
+      if (keysPressed.Count > 0) {
         var rightClickView = Input.GetMouseButton(1);
         // transform.forward = cam.transform.forward;
         transform.localRotation = RotationModifier(Quaternion.AngleAxis((rightClickView ? camSnapAngle : lastCamSnapAngle), Vector3.up));
 
-        switch (keysPressed[keysPressed.Count - 1])
-        {
+        switch (keysPressed[keysPressed.Count - 1]) {
           case KeyCode.W:
             moveAngle = 0;
             movement = transform.TransformDirection(Vector3.forward);
@@ -151,24 +135,33 @@ namespace Frenspace.Player
 
         transform.localRotation = RotationModifier(Quaternion.AngleAxis((rightClickView ? camSnapAngle : lastCamSnapAngle) + moveAngle, Vector3.up));
 
-        if (rightClickView)
-        {
+        if (rightClickView) {
           camSnapped = lastCamSnapAngle != camSnapAngle;
           lastCamSnapAngle = camSnapAngle;
         }
       }
 
-      return (movement, camSnapped);
+      return (movement, camSnapped, false);
     }
 
-    virtual protected Vector3 MovementModifier(Vector3 movement)
-    {
+    virtual protected Vector3 MovementModifier(Vector3 movement) {
       return movement;
     }
 
-    protected void Move(Vector3 movement)
-    {
+    protected void Move(Vector3 movement) {
       ctrlr.Move((speed * movement) * Time.deltaTime);
+    }
+
+    public void Port(Vector3 to) {
+      this.enabled = false;
+
+      this.Defer(() => {
+        transform.position = to;
+
+        this.Defer(() => {
+          this.enabled = true;
+        });
+      });
     }
 
   }

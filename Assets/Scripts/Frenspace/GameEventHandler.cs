@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Frenspace.Fren;
 using GameEvents;
 using GameStates;
 using UnityEngine;
 
-public class GameEventHandler : MonoBehaviour
-{
+public class GameEventHandler : MonoBehaviour {
   public GameObject playerPrefab;
 
   [HideInInspector]
@@ -17,26 +17,20 @@ public class GameEventHandler : MonoBehaviour
   private GameObject player;
 
 
-  void Start()
-  {
+  void Start() {
     frenHandler = GetComponent<FrenHandler>();
   }
 
-  public void HandleEvent(byte[] e)
-  {
+  public void HandleEvent(byte[] e) {
     var id = BitConverter.ToUInt16(new ReadOnlySpan<byte>(e, 0, 2));
 
-    switch ((GameEvent)e[2])
-    {
-      case GameEvent.PLAYER:
-        {
-          switch ((PlayerEvent)e[3])
-          {
+    switch ((GameEvent)e[2]) {
+      case GameEvent.PLAYER: {
+          switch ((PlayerEvent)e[3]) {
             case PlayerEvent.REQUEST: // server
-              SpawnFren(new FrenHandler.Fren()
-              {
+              SpawnFren(new PositionedFren() {
                 ID = id,
-                go = new GameObject() { transform = { position = transform.position } },
+                position = transform.position,
 
                 instanceId = 0,
                 instance = InstanceState.WORLD,
@@ -58,17 +52,13 @@ public class GameEventHandler : MonoBehaviour
           }
           break;
         }
-      case GameEvent.MOVE:
-        {
-          switch ((MovementState)e[3])
-          {
+      case GameEvent.MOVE: {
+          switch ((MovementState)e[3]) {
             case MovementState.PORT:
-              if (id == ID)
-              {
+              if (id == ID) {
                 PortPlayer(new ReadOnlySpan<byte>(e, 4, e.Length - 4));
               }
-              else
-              {
+              else {
                 PortFren(id, new ReadOnlySpan<byte>(e, 4, e.Length - 4));
               }
               break;
@@ -78,10 +68,8 @@ public class GameEventHandler : MonoBehaviour
           }
           break;
         }
-      case GameEvent.SOCIAL:
-        {
-          switch ((SocialEvent)e[3])
-          {
+      case GameEvent.SOCIAL: {
+          switch ((SocialEvent)e[3]) {
             case SocialEvent.SAY:
               Debug.Log(id + ":" + Encoding.UTF8.GetString(new ReadOnlySpan<byte>(e, 4, e.Length - 4)));
               break;
@@ -91,23 +79,19 @@ public class GameEventHandler : MonoBehaviour
     }
   }
 
-  void HandleList(byte[] bytes)
-  {
-    var frens = new List<FrenHandler.Fren>();
+  void HandleList(byte[] bytes) {
+    var frens = new List<PositionedFren>();
 
     var i = 4; // skip id and events
     var chunkSize = 19;
-    while (i < bytes.Length)
-    {
+    while (i < bytes.Length) {
       var b = new ReadOnlySpan<byte>(bytes, i, chunkSize).ToArray();
 
       var f = BytesUtility.UnpackFren(b);
-      if (f.ID == ID)
-      {
+      if (f.ID == ID) {
         SpawnPlayer(f);
       }
-      else
-      {
+      else {
         frens.Add(f);
       }
 
@@ -118,36 +102,31 @@ public class GameEventHandler : MonoBehaviour
       frenHandler.SetFrens(frens);
   }
 
-  public void SpawnPlayer(FrenHandler.Fren playerFren)
-  {
-    player = Instantiate(playerPrefab, playerFren.go.transform.position, transform.rotation);
+  public void SpawnPlayer(PositionedFren playerFren) {
+    player = Instantiate(playerPrefab, playerFren.position, transform.rotation);
+    player.name = $"Player [{playerFren.ID}]";
     Camera.main.GetComponent<CameraControllercs>().target = player;
   }
 
-  public void SpawnFren(FrenHandler.Fren fren)
-  {
+  public void SpawnFren(PositionedFren fren) {
     frenHandler.Spawn(fren);
   }
 
-  public void RemoveFren(ushort id)
-  {
+  public void RemoveFren(ushort id) {
     frenHandler.Remove(id);
   }
 
-  void PortPlayer(ReadOnlySpan<byte> bytes)
-  {
+  void PortPlayer(ReadOnlySpan<byte> bytes) {
     var to = BytesUtility.ToVector3(bytes.ToArray());
     player.GetComponent<Frenspace.Player.Movement>().Port(to);
   }
 
-  void PortFren(ushort id, ReadOnlySpan<byte> bytes)
-  {
+  void PortFren(ushort id, ReadOnlySpan<byte> bytes) {
     var to = BytesUtility.ToVector3(bytes.ToArray());
     frenHandler.Port(id, to);
   }
 
-  void MoveFren(ushort id, MovementState e)
-  {
+  void MoveFren(ushort id, MovementState e) {
     frenHandler.SetMovementState(id, e);
   }
 

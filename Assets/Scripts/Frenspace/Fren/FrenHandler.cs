@@ -9,117 +9,97 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Burst;
 using GameStates;
+using Frenspace.Fren;
 
-public class FrenHandler : MonoBehaviour
-{
-  [BurstCompile]
-  public struct MovementJob : IJobParallelForTransform
-  {
-    [ReadOnly]
-    public NativeArray<MovementState> movements;
+[BurstCompile]
+public struct MovementJob : IJobParallelForTransform {
 
-    [ReadOnly]
-    public float deltaTime;
+  [ReadOnly]
+  public NativeArray<MovementState> movements;
 
-    public void Execute(int i, TransformAccess transform)
-    {
-      var m = movements[i];
-      if (m == MovementState.STOPPED) return;
+  [ReadOnly]
+  public float deltaTime;
 
-      var pos = transform.position;
-      Quaternion rotation = default;
-      Vector3 movement = default;
+  public void Execute(int i, TransformAccess transform) {
+    var m = movements[i];
+    if (m == MovementState.STOPPED) return;
 
-      switch (m)
-      {
-        case MovementState.NORTH:
-          rotation = Quaternion.AngleAxis(0, Vector3.up);
-          movement = Vector3.forward;
-          break;
-        case MovementState.SOUTH:
-          rotation = Quaternion.AngleAxis(180, Vector3.up);
-          movement = Vector3.back;
-          break;
-        case MovementState.WEST:
-          rotation = Quaternion.AngleAxis(-90, Vector3.up);
-          movement = Vector3.left;
-          break;
-        case MovementState.EAST:
-          rotation = Quaternion.AngleAxis(90, Vector3.up);
-          movement = Vector3.right;
-          break;
-      }
+    var pos = transform.position;
+    Quaternion rotation = default;
+    Vector3 movement = default;
 
-      var speed = 1f;
-      pos += speed * movement * deltaTime;
-
-      // TODO: vehicle handling
-
-      if (transform.position.y > 0)
-      {
-        // fake gravity
-        pos -= new Vector3(0, 2f, 0) * deltaTime;
-      }
-
-      transform.position = pos;
-      transform.rotation = rotation;
+    switch (m) {
+      case MovementState.NORTH:
+        rotation = Quaternion.AngleAxis(0, Vector3.up);
+        movement = Vector3.forward;
+        break;
+      case MovementState.SOUTH:
+        rotation = Quaternion.AngleAxis(180, Vector3.up);
+        movement = Vector3.back;
+        break;
+      case MovementState.WEST:
+        rotation = Quaternion.AngleAxis(-90, Vector3.up);
+        movement = Vector3.left;
+        break;
+      case MovementState.EAST:
+        rotation = Quaternion.AngleAxis(90, Vector3.up);
+        movement = Vector3.right;
+        break;
     }
+
+    var speed = 1f;
+    pos += speed * movement * deltaTime;
+
+    // TODO: vehicle handling
+
+    if (transform.position.y > 0) {
+      // fake gravity
+      pos -= new Vector3(0, 2f, 0) * deltaTime;
+    }
+
+    transform.position = pos;
+    transform.rotation = rotation;
   }
+}
 
-  public class Fren
-  {
-    public ushort ID;
-    public GameObject go;
-
-    public ushort instanceId;
-    public InstanceState instance;
-
-    public MovementState movement;
-    public VehicleState vehicle;
-
-
-  }
+public class FrenHandler : MonoBehaviour {
 
   public GameObject frenPrefab;
 
-  private List<Fren> frens = new List<Fren>();
+  private List<InstancedFren> frens = new();
 
   private TransformAccessArray m_AccessArray;
   private NativeArray<MovementState> m_MoveArray;
   private JobHandle m_moveJobHandle;
 
-  void Start()
-  {
+  void Start() {
     m_AccessArray = new TransformAccessArray(0);
     m_MoveArray = new NativeArray<MovementState>(0, Allocator.Persistent);
   }
 
-  void Update()
-  {
+  void Update() {
     m_moveJobHandle.Complete();
 
     var job = new MovementJob() { deltaTime = Time.deltaTime, movements = m_MoveArray };
     m_moveJobHandle = job.Schedule(m_AccessArray);
   }
 
-  void OnDestroy()
-  {
+  void OnDestroy() {
     m_moveJobHandle.Complete();
     m_MoveArray.Dispose();
     m_AccessArray.Dispose();
   }
 
-  public void Spawn(Fren fren, bool update = true)
-  {
-    var frenObj = Instantiate(frenPrefab, fren.go.transform.position, frenPrefab.transform.rotation, transform);
-    fren.go = frenObj;
+  public void Spawn(PositionedFren f, bool update = true) {
+    var fren = new InstancedFren(f) {
+      go = Instantiate(frenPrefab, f.position, frenPrefab.transform.rotation, transform)
+    };
+    fren.go.name = $"Fren [{fren.ID}]";
 
-    if (fren.ID < frens.Count)
-    {
+    if (fren.ID < frens.Count) {
       frens[fren.ID] = fren;
     }
-    else
-    {
+    else {
       frens.Add(fren);
     }
 
@@ -129,8 +109,7 @@ public class FrenHandler : MonoBehaviour
     UpdateJobTransforms();
   }
 
-  void UpdateJobTransforms()
-  {
+  void UpdateJobTransforms() {
     m_moveJobHandle.Complete();
     m_MoveArray.Dispose();
     m_AccessArray.Dispose();
@@ -138,8 +117,7 @@ public class FrenHandler : MonoBehaviour
     m_MoveArray = new NativeArray<MovementState>(frens.Where(f => f != null).Select(f => f.movement).ToArray(), Allocator.Persistent);
   }
 
-  public void SetMovementState(ushort id, MovementState movement)
-  {
+  public void SetMovementState(ushort id, MovementState movement) {
     m_moveJobHandle.Complete();
 
     m_MoveArray[id] = movement;
@@ -149,35 +127,29 @@ public class FrenHandler : MonoBehaviour
     frens[id].go.GetComponent<Animator>().Play(movement == MovementState.STOPPED ? "Idle" : "Run");
   }
 
-  public void Port(ushort id, Vector3 to)
-  {
+  public void Port(ushort id, Vector3 to) {
     frens[id].go.GetComponent<Frenspace.Player.Movement>().Port(to);
   }
 
-  public void Remove(ushort id)
-  {
+  public void Remove(ushort id) {
     Destroy(frens[id].go);
     frens[id] = null;
   }
 
-  public List<Fren> GetFrens()
-  {
+  public List<InstancedFren> GetFrens() {
     return frens;
   }
 
-  public void SetFrens(List<Fren> list)
-  {
-    foreach (var of in frens)
-    {
+  public void SetFrens(List<PositionedFren> list) {
+    foreach (var of in frens) {
       Destroy(of.go);
     }
 
     var highestId = list.Max(f => f.ID); // one other options is just having a list with MAX_CONNECTIONS capacity
 
-    frens = new List<Fren>(highestId);
+    frens = new(highestId);
 
-    foreach (var fren in list)
-    {
+    foreach (var fren in list) {
       Spawn(fren, false);
     }
 
