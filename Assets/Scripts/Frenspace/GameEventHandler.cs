@@ -47,7 +47,7 @@ public class GameEventHandler : MonoBehaviour
               break;
             case PlayerEvent.LIST: // client
               ID = id;
-              HandlePlayerList(e);
+              HandleList(e);
               break;
             case PlayerEvent.JOINED: // client
               SpawnFren(BytesUtility.UnpackFren(new ReadOnlySpan<byte>(e, 4, 19).ToArray()));
@@ -91,7 +91,7 @@ public class GameEventHandler : MonoBehaviour
     }
   }
 
-  void HandlePlayerList(byte[] bytes)
+  void HandleList(byte[] bytes)
   {
     var frens = new List<FrenHandler.Fren>();
 
