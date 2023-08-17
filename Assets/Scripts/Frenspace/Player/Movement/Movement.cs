@@ -9,32 +9,19 @@ namespace Frenspace.Player {
   /// Base movement implementation
   /// </summary>
 
-  [RequireComponent(typeof(BoxCollider))]
   public class Movement : MonoBehaviour {
+    public LayerMask layerMask;
     public float speed = 1.0f;
 
     protected Camera cam;
-    protected CharacterController ctrlr;
     protected MovementAnimation anmtr;
 
 
     virtual protected void Start() {
-      ctrlr = gameObject.GetComponent<CharacterController>();
       anmtr = gameObject.GetComponent<MovementAnimation>();
       cam = Camera.main;
 
       // TODO: handle chat input
-    }
-
-    bool isCurrentlyColliding;
-
-    void OnCollisionEnter(Collision col) {
-      Debug.Log(col.gameObject.name);
-      isCurrentlyColliding = true;
-    }
-
-    void OnCollisionExit(Collision col) {
-      isCurrentlyColliding = false;
     }
 
     protected void Update() {
@@ -43,7 +30,7 @@ namespace Frenspace.Player {
       var (movement, camSnapped, collision) = CalculateMovement();
       movement = MovementModifier(movement);
 
-      HandleNetwork(keyChanged || camSnapped, movement);
+      HandleNetwork(keyChanged || camSnapped || collision, movement);
 
       Move(movement);
 
@@ -78,6 +65,8 @@ namespace Frenspace.Player {
       return rotation;
     }
 
+    MovementState lastMovementState = MovementState.STOPPED;
+
     virtual protected void HandleNetwork(bool keyChanged, Vector3 movement) {
       if (!keyChanged) return;
 
@@ -90,28 +79,34 @@ namespace Frenspace.Player {
         case 90: ms = MovementState.EAST; break;
       }
 
-      if (keysPressed.Count == 0) ms = MovementState.STOPPED;
+      if (keysPressed.Count == 0 || movement.Equals(Vector3.zero)) ms = MovementState.STOPPED;
+
+      if (ms == lastMovementState) return;
+      lastMovementState = ms;
 
       Client.main?.Send(new byte[] { (byte)GameEvent.MOVE, (byte)ms });
+      // Debug.Log(ms);
     }
 
     float lastCamSnapAngle = 0f;
+    Vector3 lastCollision;
 
     protected (Vector3, bool, bool) CalculateMovement() {
       Vector3 lf = transform.forward;
       transform.forward = cam.transform.forward;
       float camSnapAngle = GetSnapAngle(90f);
       transform.forward = lf;
-      // transform.localRotation = Quaternion.AngleAxis(camSnapAngle, Vector3.up);
 
       Vector3 movement = new Vector3();
       float moveAngle = 0f;
-
       bool camSnapped = false;
+      bool collision = false;
+      Quaternion lastRot = transform.localRotation;
 
       if (keysPressed.Count > 0) {
         var rightClickView = Input.GetMouseButton(1);
-        // transform.forward = cam.transform.forward;
+        lastRot = transform.rotation;
+
         transform.localRotation = RotationModifier(Quaternion.AngleAxis((rightClickView ? camSnapAngle : lastCamSnapAngle), Vector3.up));
 
         switch (keysPressed[keysPressed.Count - 1]) {
@@ -139,9 +134,26 @@ namespace Frenspace.Player {
           camSnapped = lastCamSnapAngle != camSnapAngle;
           lastCamSnapAngle = camSnapAngle;
         }
+
+        var center = transform.position + new Vector3(0, 0.2f, 0);
+        Debug.DrawLine(center, center + transform.forward * 0.1f, Color.red);
+
+        if (Physics.Raycast(center, transform.forward, out RaycastHit hitF, 0.1f, layerMask)) {
+          transform.localRotation = lastRot;
+          movement = new Vector3();
+
+          if (hitF.point != lastCollision) {
+            lastCollision = hitF.point;
+            collision = true;
+          }
+        }
+        else {
+          lastCollision = default;
+        }
+
       }
 
-      return (movement, camSnapped, false);
+      return (movement, camSnapped, collision);
     }
 
     virtual protected Vector3 MovementModifier(Vector3 movement) {
@@ -149,7 +161,7 @@ namespace Frenspace.Player {
     }
 
     protected void Move(Vector3 movement) {
-      ctrlr.Move((speed * movement) * Time.deltaTime);
+      transform.position += (speed * movement) * Time.deltaTime;
     }
 
     public void Port(Vector3 to) {
