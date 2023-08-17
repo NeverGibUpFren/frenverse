@@ -63,7 +63,7 @@ public static class TilePrefabUtility {
     foreach (var path in AssetDatabase.FindAssets("*", new[] { APARTMENTS_PATH }).Select(g => AssetDatabase.GUIDToAssetPath(g))) {
       var interiorType = path.Split("/")[^1].Split(".")[0];
       if (interiorType.Contains("_"))
-        interiorType = "Wallpaper_1_" + interiorType;
+        interiorType = "Wallpaper_" + interiorType;
 
       if (!meshes.ContainsKey(interiorType)) {
         Debug.Log("No mesh found for " + interiorType);

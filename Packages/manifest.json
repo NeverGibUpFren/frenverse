@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.singularitygroup.hotreload": "git+https://gitlab.hotreload.net/root/hot-reload-releases.git#1.12.4",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.vscode": "1.2.5",
     "com.unity.probuilder": "5.1.0",
