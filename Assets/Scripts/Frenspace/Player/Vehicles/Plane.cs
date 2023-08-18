@@ -1,87 +1,79 @@
 using UnityEngine;
 
-namespace Frenspace.Player
-{
+namespace Frenspace.Player {
   /// <summary>
   /// Handles the interaction between Car and Player
   /// </summary>
-  public class Plane : MonoBehaviour
-  {
+  public class Plane : MonoBehaviour {
     private GameObject player;
 
     private bool canEnter = false;
     private bool entered = false;
 
-    void Update()
-    {
-      if (canEnter && Input.GetKeyDown("e"))
-      {
-        if (entered)
-        {
-          if (IsGrounded())
-          {
+    void Update() {
+      if (canEnter && Input.GetKeyDown("e")) {
+        if (entered) {
+          if (IsGrounded()) {
             LeavePlane();
-            player = null;
           }
         }
-        else
-        {
+        else {
           player = GameObject.FindWithTag("Player");
           EnterPlane();
         }
       }
     }
 
-    bool IsGrounded()
-    {
-      return Physics.Raycast(transform.parent.position, -Vector3.up, 0.003f);
+    bool IsGrounded() {
+      Debug.DrawLine(transform.parent.position, transform.parent.position + Vector3.down * 0.03f, Color.red, 10f);
+      return Physics.Raycast(transform.parent.position, Vector3.down, 0.03f);
     }
 
-    void EnterPlane()
-    {
+    void EnterPlane() {
+      GetComponentInChildren<BoxCollider>().enabled = false;
+
+      player.GetComponent<Rigidbody>().detectCollisions = false;
+      player.GetComponent<Rigidbody>().isKinematic = true;
+      player.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.None;
       player.GetComponent<PlayerMovement>().enabled = false;
-      player.GetComponent<PlayerMovementAnimation>().enabled = false;
-      player.GetComponent<CharacterController>().enabled = false;
+      player.GetComponent<PlayerMovementAnimation>().Animate(Vector3.zero);
 
-      player.transform.position = transform.TransformPoint(new Vector3(-0.5f, 0.444f, 0.196f));
-      player.transform.parent = transform;
-      player.transform.localRotation = new Quaternion();
+      this.Defer(() => {
+        player.transform.parent = transform;
+        player.transform.position = transform.TransformPoint(new Vector3(-0.5f, 0.444f, 0.196f));
+        player.transform.localRotation = new Quaternion();
 
-      GetComponentInParent<CharacterController>().enabled = true;
-      GetComponentInParent<PlaneMovement>().enabled = true;
+        GetComponentInParent<PlaneMovement>().enabled = true;
+        GetComponentInParent<Rigidbody>().isKinematic = false;
 
-      entered = true;
-      this.Invoke(() =>
-      {
-        GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
-      }, 0.1f);
+        entered = true;
+      });
     }
 
-    void LeavePlane()
-    {
+    void LeavePlane() {
       GetComponentInParent<PlaneMovement>().enabled = false;
-      GetComponentInParent<CharacterController>().enabled = false;
+      GetComponentInParent<Rigidbody>().isKinematic = true;
 
+      player.transform.position = transform.TransformPoint(new Vector3(-2.345f, -0.02466f, 0.195f));
       player.transform.parent = null;
-      player.transform.position = transform.TransformPoint(new Vector3(-2.345f, 0.06f, 0.195f));
 
-      player.GetComponent<CharacterController>().enabled = true;
-      player.GetComponent<PlayerMovementAnimation>().enabled = true;
-      player.GetComponent<PlayerMovement>().enabled = true;
+      this.Defer(() => {
+        player.GetComponent<Rigidbody>().detectCollisions = true;
+        player.GetComponent<Rigidbody>().isKinematic = false;
+        player.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
+        player.GetComponent<PlayerMovement>().enabled = true;
 
-      entered = false;
+        GetComponentInChildren<BoxCollider>().enabled = true;
+        entered = false;
+      });
     }
 
-    void OnTriggerEnter(Collider other)
-    {
+    void OnTriggerEnter(Collider other) {
       canEnter = true;
-      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(true);
     }
 
-    void OnTriggerExit(Collider other)
-    {
+    void OnTriggerExit(Collider other) {
       canEnter = false;
-      GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
     }
   }
 

@@ -1,7 +1,9 @@
+using System.Linq;
 using System.Collections.Generic;
-using Frenspace.Player;
+
 using UnityEngine;
-using UnityEditor;
+
+using Frenspace.Player;
 
 
 namespace Frenspace.Apartments {
@@ -29,7 +31,6 @@ namespace Frenspace.Apartments {
           if (t != null) {
             GatherTiles(t);
             EnterApartmentPreview(cellPos);
-            // SetupApartmentPreview(tile.transform);
           }
         }
       }
@@ -64,35 +65,6 @@ namespace Frenspace.Apartments {
       }
     }
 
-    void SetupApartmentPreview(Transform t) {
-      // var parent = Instantiate(EmptyParentPrefab);
-      // parent.transform.parent = selectionScene;
-
-      // foreach (var tile in gatheredTiles)
-      // {
-      //   var copy = Instantiate(tile);
-      //   copy.hideFlags = HideFlags.None;
-      //   copy.SetActive(true);
-      //   copy.transform.parent = parent.transform;
-      //   copy.transform.localPosition -= t.localPosition;
-      // }
-
-      // var innerShell = Instantiate(EmptyParentPrefab);
-      // innerShell.transform.parent = parent.transform;
-      // BuildApartment(innerShell.transform);
-      // innerShell.transform.Rotate(new Vector3(0, 180f, 0));
-
-      // parent.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-      // parent.transform.localPosition = new Vector3();
-
-      // foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
-      // {
-      //   child.gameObject.layer = LayerMask.NameToLayer("ApartmentPreview");
-      // }
-
-      // transform.GetChild(1).gameObject.SetActive(true);
-    }
-
     void BuildApartment(Transform parent) {
       foreach (var tile in gatheredTiles) {
         var block = new GameObject();
@@ -107,7 +79,7 @@ namespace Frenspace.Apartments {
           var splits = tile.name.Split("_");
           if (td == null) {
             // no tile means its air so we use our own type of tile
-            path += $"{splits[0]}_{splits[1]}";
+            path += $"{splits[1]}_{splits[2]}";
           }
           else {
             path += "Wallpaper";
@@ -120,7 +92,7 @@ namespace Frenspace.Apartments {
           var wall = Instantiate(prefab);
           wall.transform.parent = block.transform;
           wall.transform.localPosition -= dir * 0.5f;
-          wall.transform.Rotate(new Vector3(dir.x, 1f, dir.z - 1f) * 90f);
+          wall.transform.rotation = Quaternion.FromToRotation(Vector3.left, dir);
           var rot = wall.transform.rotation;
           wall.transform.rotation = Quaternion.Euler(0, rot.eulerAngles.y, rot.eulerAngles.z);
         }
@@ -146,7 +118,7 @@ namespace Frenspace.Apartments {
 
       var player = GameObject.FindWithTag("Player");
       beforePortPosition = player.transform.position;
-      player.GetComponent<Movement>().Port(apt.transform.position - new Vector3(0, 0.50f, 0));
+      player.GetComponent<Movement>().Port(apt.transform.position - new Vector3(0, 0.498f, 0));
 
       lastApartment = apt;
     }

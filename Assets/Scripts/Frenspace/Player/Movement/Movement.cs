@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GameEvents;
 using GameStates;
 using UnityEngine;
+using UnityEditor;
 
 namespace Frenspace.Player {
 
@@ -9,67 +10,68 @@ namespace Frenspace.Player {
   /// Base movement implementation
   /// </summary>
 
+  [RequireComponent(typeof(Rigidbody))]
   public class Movement : MonoBehaviour {
-    public LayerMask layerMask;
     public float speed = 1.0f;
 
     protected Camera cam;
     protected MovementAnimation anmtr;
-
+    protected new Rigidbody rigidbody;
 
     virtual protected void Start() {
       anmtr = gameObject.GetComponent<MovementAnimation>();
       cam = Camera.main;
-
-      // TODO: handle chat input
+      rigidbody = GetComponent<Rigidbody>();
     }
 
     protected void Update() {
-      var keyChanged = HandleKeys();
+      HandleKeys();
 
-      var (movement, camSnapped, collision) = CalculateMovement();
-      movement = MovementModifier(movement);
+      Move(MovementModifier(CalculateMovement()));
+    }
 
-      HandleNetwork(keyChanged || camSnapped || collision, movement);
+    Vector3 lastPos = Vector3.zero;
+    Vector3 lastVel = Vector3.zero;
+    protected void FixedUpdate() {
+      var pos = transform.position;
+      var vel = rigidbody.velocity;
+      if (!vel.Equals(lastVel) && !pos.Equals(lastPos)) {
+        lastPos = pos;
+        lastVel = vel;
+        // Debug.Log(vel);
+        HandleMovementUpdate(vel);
+      }
+    }
 
-      Move(movement);
-
+    protected void HandleMovementUpdate(Vector3 movement) {
+      HandleNetwork(movement);
       anmtr?.Animate(movement);
     }
 
     protected KeyCode[] keys = new KeyCode[] { KeyCode.W, KeyCode.S, KeyCode.A, KeyCode.D };
     protected List<KeyCode> keysPressed = new List<KeyCode>();
-    protected bool HandleKeys() {
-      var changed = false;
+    protected void HandleKeys() {
       for (int i = 0; i < keys.Length; i++) {
         KeyCode key = keys[i];
         if (Input.GetKeyDown(key)) {
           keysPressed.Add(key);
-          changed = true;
         }
         if (Input.GetKeyUp(key)) {
           keysPressed.Remove(key);
-          changed = true;
         }
       }
-      return changed;
     }
 
     protected float GetSnapAngle(float angleStep) {
       float yRotation = transform.localRotation.eulerAngles.y;
-      yRotation = (float)Mathf.RoundToInt(yRotation / angleStep) * angleStep;
+      yRotation = Mathf.RoundToInt(yRotation / angleStep) * angleStep;
       return yRotation;
     }
 
-    virtual protected Quaternion RotationModifier(Quaternion rotation) {
-      return rotation;
-    }
 
     MovementState lastMovementState = MovementState.STOPPED;
 
-    virtual protected void HandleNetwork(bool keyChanged, Vector3 movement) {
-      if (!keyChanged) return;
-
+    virtual protected void HandleNetwork(Vector3 movement) {
       var ms = MovementState.STOPPED;
 
       switch (Mathf.Round(transform.eulerAngles.y)) {
@@ -78,6 +80,8 @@ namespace Frenspace.Player {
         case 270: ms = MovementState.WEST; break;
         case 90: ms = MovementState.EAST; break;
       }
+      if (movement.y > 0) ms = MovementState.UP;
+      if (movement.y < 0) ms = MovementState.DOWN;
 
       if (keysPressed.Count == 0 || movement.Equals(Vector3.zero)) ms = MovementState.STOPPED;
 
@@ -85,13 +89,12 @@ namespace Frenspace.Player {
       lastMovementState = ms;
 
       Client.main?.Send(new byte[] { (byte)GameEvent.MOVE, (byte)ms });
-      // Debug.Log(ms);
+      Debug.Log(ms);
     }
 
     float lastCamSnapAngle = 0f;
-    Vector3 lastCollision;
 
-    protected (Vector3, bool, bool) CalculateMovement() {
+    protected Vector3 CalculateMovement() {
       Vector3 lf = transform.forward;
       transform.forward = cam.transform.forward;
       float camSnapAngle = GetSnapAngle(90f);
@@ -99,13 +102,9 @@ namespace Frenspace.Player {
 
       Vector3 movement = new Vector3();
       float moveAngle = 0f;
-      bool camSnapped = false;
-      bool collision = false;
-      Quaternion lastRot = transform.localRotation;
 
       if (keysPressed.Count > 0) {
         var rightClickView = Input.GetMouseButton(1);
-        lastRot = transform.rotation;
 
         transform.localRotation = RotationModifier(Quaternion.AngleAxis((rightClickView ? camSnapAngle : lastCamSnapAngle), Vector3.up));
 
@@ -131,29 +130,15 @@ namespace Frenspace.Player {
         transform.localRotation = RotationModifier(Quaternion.AngleAxis((rightClickView ? camSnapAngle : lastCamSnapAngle) + moveAngle, Vector3.up));
 
         if (rightClickView) {
-          camSnapped = lastCamSnapAngle != camSnapAngle;
           lastCamSnapAngle = camSnapAngle;
         }
-
-        var center = transform.position + new Vector3(0, 0.2f, 0);
-        Debug.DrawLine(center, center + transform.forward * 0.1f, Color.red);
-
-        if (Physics.Raycast(center, transform.forward, out RaycastHit hitF, 0.1f, layerMask)) {
-          transform.localRotation = lastRot;
-          movement = new Vector3();
-
-          if (hitF.point != lastCollision) {
-            lastCollision = hitF.point;
-            collision = true;
-          }
-        }
-        else {
-          lastCollision = default;
-        }
-
       }
 
-      return (movement, camSnapped, collision);
+      return movement;
+    }
+
+    virtual protected Quaternion RotationModifier(Quaternion rotation) {
+      return rotation;
     }
 
     virtual protected Vector3 MovementModifier(Vector3 movement) {
@@ -161,19 +146,20 @@ namespace Frenspace.Player {
     }
 
     protected void Move(Vector3 movement) {
-      transform.position += (speed * movement) * Time.deltaTime;
+      // transform.position += (speed * movement) * Time.deltaTime;
+      rigidbody.velocity = speed * movement;
     }
 
-    public void Port(Vector3 to) {
-      this.enabled = false;
+    public void Port(Vector3 to, bool stopMotion = true) {
+      if (stopMotion)
+        rigidbody.velocity = Vector3.zero;
 
-      this.Defer(() => {
-        transform.position = to;
+      rigidbody.MovePosition(to);
+    }
 
-        this.Defer(() => {
-          this.enabled = true;
-        });
-      });
+    void OnCollisionEnter(Collision collision) {
+      if (collision.gameObject.tag == "Player") return;
+      HandleMovementUpdate(Vector3.zero);
     }
 
   }
