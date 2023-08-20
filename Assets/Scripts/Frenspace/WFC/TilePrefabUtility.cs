@@ -36,7 +36,7 @@ public static class TilePrefabUtility {
       var buildingType = path.Split("/")[^1];
 
       foreach (var prefabPath in AssetDatabase.FindAssets("*", new[] { path }).Select(g => AssetDatabase.GUIDToAssetPath(g))) {
-        var tileName = prefabPath.Split("/")[^1].Split(".")[0].Replace("_Ground", "");
+        var tileName = prefabPath.Split("/")[^1].Split(".")[0].Split("_").Skip(1).Aggregate((c, n) => c + "_" + n).Replace("_Ground", "");
         if (tileName.Contains("Empty")) continue;
 
         if (!meshes.ContainsKey(tileName)) {
