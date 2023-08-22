@@ -23,39 +23,76 @@ namespace Frenspace.Player {
       }
     }
 
+    // void EnterCar() {
+    //   player.GetComponent<PlayerMovement>().enabled = false;
+    //   player.GetComponent<PlayerMovementAnimation>().enabled = false;
+
+    //   player.transform.position = transform.TransformPoint(new Vector3(-0.51f, 0.176f, 0.697f));
+    //   player.transform.parent = transform;
+    //   player.transform.localRotation = new Quaternion();
+
+    //   GetComponentInParent<CarMovement>().enabled = true;
+
+    //   entered = true;
+    // }
+
+    // void LeaveCar() {
+    //   GetComponentInParent<CarMovement>().enabled = false;
+
+    //   player.transform.parent = null;
+    //   player.transform.position = transform.TransformPoint(new Vector3(-2.39f, 0.06f, 0.697f));
+
+    //   player.GetComponent<PlayerMovementAnimation>().enabled = true;
+    //   player.GetComponent<PlayerMovement>().enabled = true;
+
+    //   entered = false;
+    // }
+
     void EnterCar() {
+      GetComponentInChildren<BoxCollider>().enabled = false;
+
+      player.GetComponent<Rigidbody>().detectCollisions = false;
+      player.GetComponent<Rigidbody>().isKinematic = true;
+      player.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.None;
       player.GetComponent<PlayerMovement>().enabled = false;
-      player.GetComponent<PlayerMovementAnimation>().enabled = false;
+      player.GetComponent<PlayerMovementAnimation>().Animate(Vector3.zero);
 
-      player.transform.position = transform.TransformPoint(new Vector3(-0.51f, 0.176f, 0.697f));
-      player.transform.parent = transform;
-      player.transform.localRotation = new Quaternion();
+      this.Defer(() => {
+        player.transform.parent = transform;
+        player.transform.position = transform.TransformPoint(new Vector3(-0.51f, 0.176f, 0.697f));
+        player.transform.localRotation = new Quaternion();
 
-      GetComponentInParent<CarMovement>().enabled = true;
+        GetComponentInParent<CarMovement>().enabled = true;
+        GetComponentInParent<Rigidbody>().isKinematic = false;
 
-      entered = true;
+        entered = true;
+      });
     }
 
     void LeaveCar() {
       GetComponentInParent<CarMovement>().enabled = false;
+      GetComponentInParent<Rigidbody>().isKinematic = true;
 
+      player.transform.position = transform.TransformPoint(new Vector3(-2.345f, -0.02466f, 0.195f));
       player.transform.parent = null;
-      player.transform.position = transform.TransformPoint(new Vector3(-2.39f, 0.06f, 0.697f));
 
-      player.GetComponent<PlayerMovementAnimation>().enabled = true;
-      player.GetComponent<PlayerMovement>().enabled = true;
+      this.Defer(() => {
+        player.GetComponent<Rigidbody>().detectCollisions = true;
+        player.GetComponent<Rigidbody>().isKinematic = false;
+        player.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
+        player.GetComponent<PlayerMovement>().enabled = true;
 
-      entered = false;
+        GetComponentInChildren<BoxCollider>().enabled = true;
+        entered = false;
+      });
     }
 
     void OnTriggerEnter(Collider other) {
       canEnter = true;
-      // GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(true);
     }
 
     void OnTriggerExit(Collider other) {
       canEnter = false;
-      // GameObject.FindGameObjectWithTag("Buttons").transform.Find("E").gameObject.SetActive(false);
     }
   }
 
