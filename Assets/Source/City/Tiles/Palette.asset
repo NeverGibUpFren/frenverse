@@ -53,6 +53,8 @@ MonoBehaviour:
     name: Light Purple
   - color: {r: 1, g: 0, b: 0.84800243, a: 1}
     name: Deep Pink
+  - color: {r: 0.13292098, g: 0.22182721, b: 0.2735849, a: 1}
+    name: Skyscraper1
   matchOverridesList:
   - color1: 4
     color2: 19

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Tessera;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,30 +32,72 @@ public static class TilePrefabUtility {
       );
     }
 
+    var colors = AssetDatabase.GetSubFolders(CITY_TILE_PATH + "Buildings/Variants").Skip(1);
+    var basePrefabs = AssetDatabase.FindAssets("*", new[] { CITY_TILE_PATH + "Buildings/Variants/Base" }).Select(g => AssetDatabase.GUIDToAssetPath(g));
+
+    // update base meshes itself
+    foreach (var pp in basePrefabs) {
+      var type = pp.Split("/")[^1].Split(".")[0];
+
+      if (type.Contains("Empty")) continue;
+      if (!meshes.ContainsKey(type)) continue;
+
+      var prefab = PrefabUtility.LoadPrefabContents(pp);
+
+      var (mesh, mats) = meshes[type];
+      prefab.GetComponent<MeshFilter>().sharedMesh = mesh;
+      prefab.GetComponent<MeshRenderer>().sharedMaterials = mats
+      .Select(matName => matName.Contains("Wall") ? $"Wall_Red" : matName)
+      .Select(n => CITY_TILE_PATH + "Models/Materials/" + n + ".mat")
+      .Select(path => (Material)AssetDatabase.LoadAssetAtPath(path, typeof(Material)))
+      .ToArray();
+
+      PrefabUtility.SaveAsPrefabAsset(prefab, pp);
+      PrefabUtility.UnloadPrefabContents(prefab);
+    }
+
     // for every building folder update mesh and mats
-    foreach (var path in AssetDatabase.GetSubFolders(CITY_TILE_PATH + "Buildings")) {
-      var buildingType = path.Split("/")[^1];
+    foreach (var path in colors) {
+      var color = path.Split("/")[^1];
 
-      foreach (var prefabPath in AssetDatabase.FindAssets("*", new[] { path }).Select(g => AssetDatabase.GUIDToAssetPath(g))) {
-        var tileName = prefabPath.Split("/")[^1].Split(".")[0].Split("_").Skip(1).Aggregate((c, n) => c + "_" + n).Replace("_Ground", "");
-        if (tileName.Contains("Empty")) continue;
-
-        if (!meshes.ContainsKey(tileName)) {
-          Debug.Log("No mesh found for " + tileName);
-          continue;
-        }
+      foreach (var prefabPath in basePrefabs) {
+        var type = prefabPath.Split("/")[^1].Split(".")[0];
 
         var prefab = PrefabUtility.LoadPrefabContents(prefabPath);
 
-        var (mesh, mats) = meshes[tileName];
-        prefab.GetComponent<MeshFilter>().sharedMesh = mesh;
-        prefab.GetComponent<MeshRenderer>().sharedMaterials = mats
-        .Select(matName => matName.Contains("Wall") ? $"Wall_{buildingType}" : matName)
-        .Select(n => CITY_TILE_PATH + "Models/Materials/" + n + ".mat")
-        .Select(path => (Material)AssetDatabase.LoadAssetAtPath(path, typeof(Material)))
-        .ToArray();
+        if (!type.Contains("Empty")) {
+          if (!meshes.ContainsKey(type)) {
+            Debug.Log("No mesh found for " + type);
+            PrefabUtility.UnloadPrefabContents(prefab);
+            continue;
+          }
 
-        PrefabUtility.SaveAsPrefabAsset(prefab, prefabPath);
+          var (mesh, mats) = meshes[type];
+          prefab.GetComponent<MeshFilter>().sharedMesh = mesh;
+          prefab.GetComponent<MeshRenderer>().sharedMaterials = mats
+          .Select(matName => matName.Contains("Wall") ? $"Wall_{color}" : matName)
+          .Select(n => CITY_TILE_PATH + "Models/Materials/" + n + ".mat")
+          .Select(path => (Material)AssetDatabase.LoadAssetAtPath(path, typeof(Material)))
+          .ToArray();
+        }
+
+        var t = prefab.GetComponent<TesseraTile>();
+        var colIdx = t.palette.entries.FindIndex(c => c.name == color);
+        foreach (var side in t.sylvesFaceDetails) {
+          if (t.palette.GetEntry(side.faceDetails.center).name == "Black") {
+            side.faceDetails.top = colIdx;
+            side.faceDetails.topLeft = colIdx;
+            side.faceDetails.topRight = colIdx;
+            side.faceDetails.bottom = colIdx;
+            side.faceDetails.bottomLeft = colIdx;
+            side.faceDetails.bottomRight = colIdx;
+            side.faceDetails.center = colIdx;
+            side.faceDetails.left = colIdx;
+            side.faceDetails.right = colIdx;
+          }
+        }
+
+        PrefabUtility.SaveAsPrefabAsset(prefab, path + "/" + color + "_" + type + ".prefab");
         PrefabUtility.UnloadPrefabContents(prefab);
       }
     }
