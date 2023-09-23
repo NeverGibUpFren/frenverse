@@ -1,3 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:Button text="Button" display-tooltip-when-elided="true" name="Menu" style="width: 75px; height: 75px; padding-left: 12px; top: 30px; left: 30px;" />
+    <ui:Button text="Menu" display-tooltip-when-elided="true" name="Menu" parse-escape-sequences="false" style="width: 75px; height: 75px; padding-left: 12px; top: 30px; left: 30px; opacity: 1; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px;" />
+    <ui:TextField picking-mode="Ignore" value="chat field" name="Chat" style="height: 34px; width: 311px; transform-origin: right; translate: 0 0; bottom: 50px; right: 125px; position: absolute;" />
+    <ui:Button text="Send" display-tooltip-when-elided="true" name="Send" style="position: absolute; top: auto; left: auto; height: 34px; right: 50px; bottom: 50px;" />
 </ui:UXML>
