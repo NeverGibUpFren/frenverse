@@ -1,13 +1,11 @@
 {
   "dependencies": {
-    "com.singularitygroup.hotreload": "git+https://gitlab.hotreload.net/root/hot-reload-releases.git#1.12.5",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.vscode": "1.2.5",
     "com.unity.probuilder": "5.1.0",
     "com.unity.render-pipelines.universal": "15.0.6",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.transport": "2.0.2",
-    "com.veriorpies.parrelsync": "https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
